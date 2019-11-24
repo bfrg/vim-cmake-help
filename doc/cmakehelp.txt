@@ -1,0 +1,58 @@
+*cmakehelp.txt*  View CMake documentation inside Vim
+
+Author:     bfrg <http://github.com/bfrg>
+Website:    https://github.com/bfrg/vim-cmake-help
+License:    Same terms as Vim itself (see |license|)
+
+
+==============================================================================
+INTRODUCTION                                                 *cmakehelp-intro*
+
+Plugin to quickly view CMake documentation inside Vim.
+
+==============================================================================
+USAGE                                                        *cmakehelp-usage*
+
+Commands ~
+
+:CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
+            Open the online CMake documentation for {arg} in the browser
+            specified by |cmakehelp.browser|.
+
+            When {arg} is not given, the command will open the start page
+            https://cmake.org/cmake/help/vX.YY, where X.YY denotes the version
+            of the CMake executable specified in |cmakehelp.exe|.
+
+Mappings ~
+
+<plug>(cmake-help-online)                          *<plug>(cmake-help-online)*
+            Open the CMake documentation for the current word under the cursor
+            in the browser specified by |cmakehelp.browser|.
+
+            Example: >
+                " in ~/.vim/after/ftplugin/cmake.vim
+                nmap <buffer> <space>h <plug>(cmake-help-online)
+<
+
+==============================================================================
+CONFIGURATION                                               *cmakehelp-config*
+
+b:cmakehelp                                                      *b:cmakehelp*
+g:cmakehelp                                                      *g:cmakehelp*
+
+Options can be set either in the buffer-local |Dictionary| b:cmakehelp, or
+alternatively in the global Dictionary g:cmakehelp. The following keys are
+supported:
+                                                               *cmakehelp.exe*
+"exe" ~
+            Path to CMake executable.
+            Default: value found in $PATH
+                                                           *cmakehelp.browser*
+"browser" ~
+            Command for opening the url.
+            Default: "firefox"
+
+Note: The |buffer-variable| b:cmakehelp must be specified for cmake filetypes,
+for example, in after/ftplugin/cmake.vim.
+
+ vim:tw=78:et:ft=help:norl:
