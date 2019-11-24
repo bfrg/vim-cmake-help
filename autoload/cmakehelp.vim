@@ -85,6 +85,12 @@ function! cmakehelp#browser(word) abort
                 \ group,
                 \ word
                 \ )
+
+        if group ==# 'property'
+            let url = printf('https://cmake.org/cmake/help/v%s/manual/cmake-properties.7.html',
+                    \ s:version
+                    \ )
+        endif
     endif
 
     let cmd = printf('exec %s %s &', s:get('browser'), url)
