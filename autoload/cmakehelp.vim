@@ -28,7 +28,7 @@ let s:helplists = #{
 " For example, s:lookup['set_target_properties'] returns 'command'
 let s:lookup = {}
 
-" CMake version, like 3.15
+" CMake version, like v3.15, or 'latest'
 let s:version = ''
 
 " Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
@@ -43,9 +43,10 @@ endfunction
 function! s:init_cmake_version() abort
     let output = systemlist(s:get('exe') .. ' --version')[0]
     if v:shell_error
-        return s:error('cmake-help: couldn''t determine CMake version')
+        let s:version = 'latest'
+        return
     endif
-    let s:version = matchstr(output, '\c^\s*cmake\s\+version\s\+\zs\d\.\d\+\ze.*$')
+    let s:version = 'v' .. matchstr(output, '\c^\s*cmake\s\+version\s\+\zs\d\.\d\+\ze.*$')
 endfunction
 
 " Initialize lookup-table for finding the group (command, property, variable) of
@@ -66,7 +67,7 @@ function! cmakehelp#browser(word) abort
     endif
 
     if empty(a:word)
-        let url = 'https://cmake.org/cmake/help/v' .. s:version
+        let url = 'https://cmake.org/cmake/help/' .. s:version
     else
         let group = get(s:lookup, a:word, get(s:lookup, tolower(a:word), ''))
 
@@ -80,14 +81,14 @@ function! cmakehelp#browser(word) abort
             let word = substitute(a:word, '<\|>', '', 'g')
         endif
 
-        let url = printf('https://cmake.org/cmake/help/v%s/%s/%s.html',
+        let url = printf('https://cmake.org/cmake/help/%s/%s/%s.html',
                 \ s:version,
                 \ group,
                 \ word
                 \ )
 
         if group ==# 'property'
-            let url = printf('https://cmake.org/cmake/help/v%s/manual/cmake-properties.7.html',
+            let url = printf('https://cmake.org/cmake/help/%s/manual/cmake-properties.7.html',
                     \ s:version
                     \ )
         endif
