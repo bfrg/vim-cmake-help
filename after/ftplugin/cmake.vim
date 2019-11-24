@@ -1,9 +1,9 @@
 " ==============================================================================
 " View CMake documentation inside Vim
-" File:         ftplugin/cmake.vim
+" File:         after/ftplugin/cmake.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 23, 2019
+" Last Change:  Nov 24, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
