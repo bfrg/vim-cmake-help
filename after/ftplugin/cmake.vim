@@ -17,11 +17,11 @@ set cpoptions&vim
 " Open CMake documentation in a browser
 command! -buffer -bar -nargs=? -complete=customlist,cmakehelp#complete CMakeHelpOnline call cmakehelp#browser(<q-args>)
 
-nnoremap <silent><buffer> <plug>(cmake-help-browser) :<c-u>call cmakehelp#browser(expand('<cword>'))<cr>
+nnoremap <silent><buffer> <plug>(cmake-help-online) :<c-u>call cmakehelp#browser(expand('<cword>'))<cr>
 
 let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'execute')
         \ .. ' | delc CMakeHelpOnline'
-        \ .. ' | execute "nunmap <buffer> <plug>(cmake-help-browser)"'
+        \ .. ' | execute "nunmap <buffer> <plug>(cmake-help-online)"'
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
