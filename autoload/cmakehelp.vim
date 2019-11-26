@@ -91,7 +91,7 @@ endfunction
 " The output will be appended to a prepared buffer. 'callback' is called with
 " one argument, the buffer number of the prepared buffer and is supposed to open
 " a window with the passed buffer (popup window or normal window)
-function! s:help_buffer(word, callback) abort
+function! s:openhelp(word, callback) abort
     if empty(a:word)
         return
     endif
@@ -218,12 +218,12 @@ endfunction
 
 " Open CMake documentation for 'word' in the preview window
 function! cmakehelp#preview(mods, word) abort
-    call s:help_buffer(a:word, funcref('s:preview_cb', [a:mods]))
+    call s:openhelp(a:word, funcref('s:preview_cb', [a:mods]))
 endfunction
 
 " Open CMake documentation for 'word' in popup window at current cursor position
 function! cmakehelp#popup(word) abort
-    call s:help_buffer(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
+    call s:openhelp(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
 endfunction
 
 function! cmakehelp#balloonexpr() abort
@@ -236,7 +236,7 @@ function! cmakehelp#balloonexpr() abort
     endif
 
     let s:lastword = v:beval_text
-    call s:help_buffer(v:beval_text, funcref('s:popup_cb', [function('popup_beval')]))
+    call s:openhelp(v:beval_text, funcref('s:popup_cb', [function('popup_beval')]))
     return ''
 endfunction
 
