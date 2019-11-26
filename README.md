@@ -9,14 +9,16 @@ View CMake documentation inside Vim.
 
 | Command                    | Description                                                   |
 | -------------------------- | ------------------------------------------------------------- |
+| `:CMakeHelp {arg}`         | Open the CMake documentation for `{arg}` in a `previewwindow`.|
 | `:CMakeHelpOnline [{arg}]` | Open the online CMake documentation for `{arg}` in a browser. |
 
 
 #### Mappings
 
-| Mapping                    | Description                                                            |
-| -------------------------- | ---------------------------------------------------------------------- |
-| `<plug>(cmake-help-online)`| Open the online CMake documentation for word under cursor in a browser.|
+| Mapping                    | Description                                                              |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `<plug>(cmake-help)`       | Open the CMake documentation for word under cursor in a `previewwindow`. |
+| `<plug>(cmake-help-online)`| Open the online CMake documentation for word under cursor in a browser.  |
 
 
 ## Configuration

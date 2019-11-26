@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 24, 2019
+" Last Change:  Nov 26, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -24,15 +24,20 @@ let s:helplists = #{
         \ variable: []
         \ }
 
-" Obtain the group of a CMake keyword
-" For example, s:lookup['set_target_properties'] returns 'command'
+" Lookup table, example: s:lookup['set_target_properties'] -> 'command'
 let s:lookup = {}
 
 " CMake version, like v3.15, or 'latest'
 let s:version = ''
 
 " Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
-let s:get = {k -> get(get(b:, 'cmakehelp', get(g:, 'cmakehelp', {})), k, s:defaults[k])}
+let s:get = {k -> get(get(b:, 'cmakehelp', get(g:, 'cmakehelp', {})), k, get(s:defaults, k))}
+
+" Get the group of a CMake keyword
+let s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
+
+" Get the name of a CMake help buffer
+let s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
 
 function! s:error(...) abort
     echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
@@ -60,6 +65,62 @@ function! s:init_helplists() abort
     endfor
 endfunction
 
+" Return new rst buffer
+function! s:bufnew(bufname) abort
+    let bufnr = bufadd(a:bufname)
+    silent call bufload(bufnr)
+    call setbufvar(bufnr, '&swapfile', 0)
+    call setbufvar(bufnr, '&buftype', 'nofile')
+    call setbufvar(bufnr, '&bufhidden', 'hide')
+    call setbufvar(bufnr, '&filetype', 'rst')
+    return bufnr
+endfunction
+
+" TODO allow empty word for running 'cmake --help-full'
+function! s:help_buffer(word) abort
+    if empty(a:word)
+        return
+    endif
+
+    let group = s:getgroup(a:word)
+    if empty(group)
+        return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
+    endif
+
+    let bufname = s:bufname(group, a:word)
+
+    " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
+    " buffers to the buffer list, see :ls!, which will be unloaded and empty
+    if !bufexists(bufname) || (bufexists(bufname) && !bufloaded((bufname)))
+        let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
+        silent let output = systemlist(cmd)
+
+        if empty(output)
+            return s:error('cmake-help: no output from running "%s"', cmd)
+        endif
+
+        if v:shell_error
+            return s:error('cmake-help: error running "%s"', cmd)
+        endif
+
+        let bufnr = s:bufnew(bufname)
+        call setbufline(bufnr, 1, output)
+        call setbufvar(bufnr, '&modifiable', 0)
+        call setbufvar(bufnr, '&readonly', 1)
+        return bufnr
+    endif
+
+    return bufnr(bufname)
+endfunction
+
+" Open CMake documentation for 'word' in the preview window
+function! cmakehelp#preview(mods, word) abort
+    let bufnr = s:help_buffer(a:word)
+    if !bufnr || bufwinnr(bufname(bufnr)) > 0
+        return
+    endif
+    silent execute a:mods 'pedit' fnameescape(bufname(bufnr))
+endfunction
 " Open CMake documentation for 'word' in a browser
 function! cmakehelp#browser(word) abort
     if empty(s:version)

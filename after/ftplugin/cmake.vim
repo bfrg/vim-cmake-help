@@ -3,7 +3,7 @@
 " File:         after/ftplugin/cmake.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 25, 2019
+" Last Change:  Nov 26, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -14,13 +14,18 @@ endif
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
+" Open CMake documentation in a preview window
+command! -buffer -bar -nargs=1 -complete=customlist,cmakehelp#complete CMakeHelp call cmakehelp#preview(<q-mods>, <q-args>)
+
 " Open CMake documentation in a browser
 command! -buffer -bar -nargs=? -complete=customlist,cmakehelp#complete CMakeHelpOnline call cmakehelp#browser(<q-args>)
 
+nnoremap <silent><buffer> <plug>(cmake-help)        :<c-u>call cmakehelp#open('', expand('<cword>'))<cr>
 nnoremap <silent><buffer> <plug>(cmake-help-online) :<c-u>call cmakehelp#browser(expand('<cword>'))<cr>
 
 let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'execute')
-        \ .. ' | delc CMakeHelpOnline'
+        \ .. ' | delc CMakeHelp | delc CMakeHelpOnline'
+        \ .. ' | execute "nunmap <buffer> <plug>(cmake-help)"'
         \ .. ' | execute "nunmap <buffer> <plug>(cmake-help-online)"'
 
 let &cpoptions = s:save_cpo

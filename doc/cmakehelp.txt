@@ -15,6 +15,9 @@ USAGE                                                        *cmakehelp-usage*
 
 Commands ~
 
+:CMakeHelp {arg}                                                  *:CMakeHelp*
+            Open the CMake documentation for {arg} in a 'previewwindow'.
+
 :CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
             Open the online CMake documentation for {arg} in the browser
             specified by |cmakehelp.browser|.
@@ -24,6 +27,15 @@ Commands ~
             of the CMake executable specified in |cmakehelp.exe|.
 
 Mappings ~
+
+<plug>(cmake-help)                                        *<plug>(cmake-help)*
+            Open the CMake documentation for the current word under the cursor
+            in a 'previewwindow'.
+
+            Example: >
+                " in ~/.vim/after/ftplugin/cmake.vim
+                nmap <buffer> <space>h <plug>(cmake-help)
+<
 
 <plug>(cmake-help-online)                          *<plug>(cmake-help-online)*
             Open the CMake documentation for the current word under the cursor
