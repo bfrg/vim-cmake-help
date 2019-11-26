@@ -55,6 +55,16 @@ Mappings ~
                 " in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help-online)
 <
+Mouse hovers ~
+                                                       *cmakehelp-balloonexpr*
+A 'balloonexpr' is provided that will display the CMake documentation for the
+word under the mouse pointer in a popup window.
+
+To enable this feature, add the following to after/ftplugin/cmake.vim: >
+    setlocal ballooneval
+    setlocal balloonevalterm
+    setlocal balloonexpr=cmakehelp#balloonexpr()
+<
 ==============================================================================
 CONFIGURATION                                               *cmakehelp-config*
 

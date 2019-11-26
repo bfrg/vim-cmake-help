@@ -23,6 +23,19 @@ View CMake documentation inside Vim.
 | `<plug>(cmake-help-online)`| Open the online CMake documentation for the word under the cursor in a browser.  |
 
 
+#### Mouse hovers: `balloonexpr`
+
+A `balloonexpr` is provided that will display the CMake documentation for the
+word under the mouse pointer in a popup window.
+
+To enable this feature, add the following to `~/.vim/after/ftplugin/cmake.vim`:
+```vim
+setlocal ballooneval
+setlocal balloonevalterm
+setlocal balloonexpr=cmakehelp#balloonexpr()
+```
+
+
 ## Configuration
 
 #### `g:cmakehelp` and `b:cmakehelp`

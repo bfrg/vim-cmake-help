@@ -46,6 +46,12 @@ let s:lookup = {}
 " CMake version, like v3.15, or 'latest'
 let s:version = ''
 
+" Last word the cursor was on; required for balloonevalexpr
+let s:lastword = ''
+
+" winid of current popup window
+let s:winid = 0
+
 " Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
 let s:get = {k -> get(get(b:, 'cmakehelp', get(g:, 'cmakehelp', {})), k, get(s:defaults, k))}
 
@@ -185,6 +191,14 @@ function! s:popup_filter(winid, key) abort
     return v:false
 endfunction
 
+function! s:balloon_popup(word, tid) abort
+    let bufnr = s:help_buffer(a:word)
+    if !bufnr
+        return
+    endif
+    let s:winid = popup_beval(bufnr, s:popup_opts(bufnr))
+endfunction
+
 " Open CMake documentation for 'word' in the preview window
 function! cmakehelp#preview(mods, word) abort
     let bufnr = s:help_buffer(a:word)
@@ -243,6 +257,22 @@ function! cmakehelp#browser(word) abort
             \ out_io: 'null',
             \ err_io: 'null'
             \ })
+endfunction
+
+function! cmakehelp#balloonexpr() abort
+    if s:winid && !empty(popup_getpos(s:winid))
+        if s:lastword == v:beval_text
+            return ''
+        endif
+        call popup_close(s:winid)
+        let s:winid = 0
+    endif
+
+    let s:lastword = v:beval_text
+    " We need a timer, or else: E523 Not allowed here
+    " Buffer can't be modified inside balloonexpr
+    call timer_start(1, funcref('s:balloon_popup', [v:beval_text]))
+    return ''
 endfunction
 
 function! cmakehelp#complete(arglead, cmdline, cursorpos) abort
