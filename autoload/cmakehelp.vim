@@ -10,9 +10,25 @@
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
+hi def link CMakeHelp           Pmenu
+hi def link CMakeHelpTitle      Pmenu
+hi def link CMakeHelpScrollbar  PmenuSbar
+hi def link CMakeHelpThumb      PmenuThumb
+
 let s:defaults = #{
-        \ exe: exepath('cmake'),
-        \ browser: 'firefox'
+        \ exe: 'cmake',
+        \ browser: 'firefox',
+        \ minwidth: 60,
+        \ maxwidth: 90,
+        \ minheight: 5,
+        \ maxheight: 30,
+        \ title: v:false,
+        \ close: 'none',
+        \ scrollup: "\<s-pageup>",
+        \ scrolldown: "\<s-pagedown>",
+        \ top: "\<s-home>",
+        \ bottom: "\<s-end>",
+        \ scrollbar: v:true
         \ }
 
 let s:helplists = #{
@@ -91,7 +107,7 @@ function! s:help_buffer(word) abort
 
     " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
     " buffers to the buffer list, see :ls!, which will be unloaded and empty
-    if !bufexists(bufname) || (bufexists(bufname) && !bufloaded((bufname)))
+    if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
         let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
         silent let output = systemlist(cmd)
 
@@ -113,6 +129,62 @@ function! s:help_buffer(word) abort
     return bufnr(bufname)
 endfunction
 
+function! s:popup_opts(bufnr) abort
+    let opts = #{
+            \ minwidth: s:get('minwidth'),
+            \ maxwidth: s:get('maxwidth'),
+            \ minheight: s:get('minheight'),
+            \ maxheight: s:get('maxheight'),
+            \ firstline: 1,
+            \ highlight: 'CMakeHelp',
+            \ padding: [0,1,1,1],
+            \ border: [1,0,0,0],
+            \ borderchars: [' '],
+            \ drag: v:true,
+            \ borderhighlight: ['CMakeHelpTitle'],
+            \ close: s:get('close'),
+            \ mapping: v:false,
+            \ scrollbar: s:get('scrollbar'),
+            \ scrollbarhighlight: 'CMakeHelpScrollbar',
+            \ scrollbarthumb: 'CMakeHelpThumb',
+            \ filter: funcref('s:popup_filter')
+            \ }
+
+    if s:get('title')
+        call extend(opts, #{title: bufname(a:bufnr)})
+    endif
+
+    return opts
+endfunction
+
+function! s:popup_filter(winid, key) abort
+    if a:key ==# s:get('scrollup')
+        let line = popup_getoptions(a:winid).firstline
+        let newline = (line - 2) > 0 ? (line - 2) : 1
+        call popup_setoptions(a:winid, #{firstline: newline})
+        return v:true
+    elseif a:key ==# s:get('scrolldown')
+        let line = popup_getoptions(a:winid).firstline
+        " TODO use line('$', winid) in the future, requires 8.1.1967
+        call win_execute(a:winid, 'let g:nlines = line("$")')
+        let newline = line < g:nlines ? (line + 2) : g:nlines
+        call popup_setoptions(a:winid, #{firstline: newline})
+        unlet g:nlines
+        return v:true
+    elseif a:key ==# s:get('top')
+        call popup_setoptions(a:winid, #{firstline: 1})
+        return v:true
+    elseif a:key ==# s:get('bottom')
+        let height = popup_getpos(a:winid).core_height
+        call win_execute(a:winid, 'let g:nlines = line("$")')
+        let newline = g:nlines >= height ? (g:nlines - height + 1) : 1
+        call popup_setoptions(a:winid, #{firstline: newline})
+        unlet g:nlines
+        return v:true
+    endif
+    return v:false
+endfunction
+
 " Open CMake documentation for 'word' in the preview window
 function! cmakehelp#preview(mods, word) abort
     let bufnr = s:help_buffer(a:word)
@@ -121,6 +193,16 @@ function! cmakehelp#preview(mods, word) abort
     endif
     silent execute a:mods 'pedit' fnameescape(bufname(bufnr))
 endfunction
+
+" Open CMake documentation for 'word' in popup window at current cursor position
+function! cmakehelp#popup(word) abort
+    let bufnr = s:help_buffer(a:word)
+    if !bufnr
+        return
+    endif
+    let s:winid = popup_atcursor(bufnr, s:popup_opts(bufnr))
+endfunction
+
 " Open CMake documentation for 'word' in a browser
 function! cmakehelp#browser(word) abort
     if empty(s:version)

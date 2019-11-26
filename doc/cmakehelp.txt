@@ -18,6 +18,9 @@ Commands ~
 :CMakeHelp {arg}                                                  *:CMakeHelp*
             Open the CMake documentation for {arg} in a 'previewwindow'.
 
+:CMakeHelpPopup {arg}                                        *:CMakeHelpPopup*
+            Open the CMake documentation for {arg} in a |popup-window|.
+
 :CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
             Open the online CMake documentation for {arg} in the browser
             specified by |cmakehelp.browser|.
@@ -36,7 +39,14 @@ Mappings ~
                 " in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help)
 <
+<plug>(cmake-help-popup)                            *<plug>(cmake-help-popup)*
+            Open the CMake documentation for the current word under the cursor
+            in a |popup-window|.
 
+            Example: >
+                " in ~/.vim/after/ftplugin/cmake.vim
+                nmap <buffer> <space>h <plug>(cmake-help-popup)
+<
 <plug>(cmake-help-online)                          *<plug>(cmake-help-online)*
             Open the CMake documentation for the current word under the cursor
             in the browser specified by |cmakehelp.browser|.
@@ -45,16 +55,15 @@ Mappings ~
                 " in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help-online)
 <
-
 ==============================================================================
 CONFIGURATION                                               *cmakehelp-config*
 
 b:cmakehelp                                                      *b:cmakehelp*
 g:cmakehelp                                                      *g:cmakehelp*
 
-Options can be set either in the buffer-local |Dictionary| b:cmakehelp, or
-alternatively in the global Dictionary g:cmakehelp. The following keys are
-supported:
+Options can be set either through the buffer-local |Dictionary| b:cmakehelp,
+or alternatively through the global |Dictionary| g:cmakehelp. The following
+keys are supported:
                                                                *cmakehelp.exe*
 "exe" ~
             Path to CMake executable.
@@ -63,8 +72,89 @@ supported:
 "browser" ~
             Command for opening the url.
             Default: "firefox"
+                                                             *cmakehelp.title*
+"title" ~
+            Display a title at the top of the popup window. The highlighting
+            can be configured through |hl-CMakeHelpTitle|.
+            Default: 0
+                                                             *cmakehelp.close*
+"close" ~
+            Mouse event for closing the popup window. When set to "click", any
+            mouse click in the popup window will close it. When set to
+            "button", an X is displayed in the top-right corner that can be
+            clicked to close the popup window.
+            Default: "none"
+                                                         *cmakehelp.scrollbar*
+"scrollbar" ~
+            Display a scrollbar in the popup window. The highlighting can be
+            configured through |hl-CMakeHelpScrollbar| and |hl-CMakeHelpThumb|.
+            Default: 1
+                                                          *cmakehelp.minwidth*
+"minwidth" ~
+            Minimum width of the popup window.
+            Default: 60
+                                                          *cmakehelp.maxwidth*
+"maxwidth" ~
+            Maximum width of the popup window.
+            Default: 90
+                                                         *cmakehelp.minheight*
+"minheight" ~
+            Minimum height of the popup window.
+            Default: 5
+                                                         *cmakehelp.maxheight*
+"maxheight" ~
+            Maximum height of the popup window.
+            Default: 30
+                                                          *cmakehelp.scrollup*
+"scrollup" ~
+            Key to press for scrolling the text up in the popup window.
+            Default: <S-PageUp>
+                                                        *cmakehelp.scrolldown*
+"scrolldown" ~
+            Key to press for scrolling the text down in the popup window.
+            Default: <S-PageDown>
+                                                               *cmakehelp.top*
+"top" ~
+            Key to press for jumping to the top of the buffer in the popup
+            window.
+            Default: <S-Home>
+                                                            *cmakehelp.bottom*
+"bottom" ~
+            Key to press for jumping to the bottom of the buffer in the popup
+            window.
+            Default: <S-End>
 
 Note: The |buffer-variable| b:cmakehelp must be specified for cmake filetypes,
 for example, in after/ftplugin/cmake.vim.
+
+                                                         *cmakehelp-highlight*
+Popup Window Highlight Groups ~
+
+The appearance of the popup window can be configured through the following
+highlight groups:
+
+CMakeHelp                                                       *hl-CMakeHelp*
+                    Popup window background and error text. This is the
+                    equivalent of the |hl-Normal| highlight group in regular
+                    windows.
+                    Default: |hl-Pmenu|
+
+CMakeHelpTitle                                             *hl-CMakeHelpTitle*
+                    Title (top line) of popup window.
+                    Default: |hl-Pmenu|
+
+                    Note: The title of the popup window is set to something
+                    like >
+                        CMake Help: set_target_properties [command]
+
+CMakeHelpScrollbar                                     *hl-CMakeHelpScrollbar*
+                    Highlight group name for the |popup-scrollbar|. The
+                    background color is what matters.
+                    Default: |hl-PmenuSbar|
+
+CMakeHelpThumb                                             *hl-CMakeHelpThumb*
+                    Highlight group name for the |popup-scrollbar| thumb. The
+                    background color is what matters.
+                    Default: |hl-PmenuThumb|
 
  vim:tw=78:et:ft=help:norl:
