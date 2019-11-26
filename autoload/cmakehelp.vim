@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 26, 2019
+" Last Change:  Nov 27, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -29,15 +29,6 @@ let s:defaults = #{
         \ top: "\<s-home>",
         \ bottom: "\<s-end>",
         \ scrollbar: v:true
-        \ }
-
-let s:helplists = #{
-        \ command: [],
-        \ manual: [],
-        \ module: [],
-        \ policy: [],
-        \ property: [],
-        \ variable: []
         \ }
 
 " Lookup table, example: s:lookup['set_target_properties'] -> 'command'
@@ -78,10 +69,11 @@ endfunction
 
 " Initialize lookup-table for finding the group (command, property, variable) of
 " a CMake keyword
-function! s:init_helplists() abort
-    for i in keys(s:helplists)
-        silent let s:helplists[i] = systemlist(printf('%s --help-%s-list', s:get('exe'), i))
-        for k in s:helplists[i]
+function! s:init_lookup() abort
+    let groups = ['command', 'manual', 'module', 'policy', 'property', 'variable']
+    for i in groups
+        silent let words = systemlist(printf('%s --help-%s-list', s:get('exe'), i))
+        for k in words
             let s:lookup[k] = i
         endfor
     endfor
@@ -282,7 +274,7 @@ function! cmakehelp#complete(arglead, cmdline, cursorpos) abort
     return keys(s:lookup)->filter({_,i -> match(i, a:arglead) == 0})->sort()
 endfunction
 
-call s:init_helplists()
+call s:init_lookup()
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
