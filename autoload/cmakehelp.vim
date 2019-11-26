@@ -87,17 +87,6 @@ function! s:init_helplists() abort
     endfor
 endfunction
 
-" Return new rst buffer
-function! s:bufnew(bufname) abort
-    let bufnr = bufadd(a:bufname)
-    silent call bufload(bufnr)
-    call setbufvar(bufnr, '&swapfile', 0)
-    call setbufvar(bufnr, '&buftype', 'nofile')
-    call setbufvar(bufnr, '&bufhidden', 'hide')
-    call setbufvar(bufnr, '&filetype', 'rst')
-    return bufnr
-endfunction
-
 " 'callback' is called after the channel is closed and its output has been read.
 " The output will be appended to a prepared buffer. 'callback' is called with
 " one argument, the buffer number of the prepared buffer and is supposed to open
@@ -145,7 +134,12 @@ function! s:close_cb(callback, bufname, channel) abort
         return s:error('cmake-help: no output from running "%s"', cmd)
     endif
 
-    let bufnr = s:bufnew(a:bufname)
+    let bufnr = bufadd(a:bufname)
+    silent call bufload(bufnr)
+    call setbufvar(bufnr, '&swapfile', 0)
+    call setbufvar(bufnr, '&buftype', 'nofile')
+    call setbufvar(bufnr, '&bufhidden', 'hide')
+    call setbufvar(bufnr, '&filetype', 'rst')
     call setbufline(bufnr, 1, output)
     call setbufvar(bufnr, '&modifiable', 0)
     call setbufvar(bufnr, '&readonly', 1)
