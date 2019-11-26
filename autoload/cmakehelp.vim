@@ -98,8 +98,11 @@ function! s:bufnew(bufname) abort
     return bufnr
 endfunction
 
-" TODO allow empty word for running 'cmake --help-full'
-function! s:help_buffer(word) abort
+" 'callback' is called after the channel is closed and its output has been read.
+" The output will be appended to a prepared buffer. 'callback' is called with
+" one argument, the buffer number of the prepared buffer and is supposed to open
+" a window with the passed buffer (popup window or normal window)
+function! s:help_buffer(word, callback) abort
     if empty(a:word)
         return
     endif
@@ -114,25 +117,39 @@ function! s:help_buffer(word) abort
     " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
     " buffers to the buffer list, see :ls!, which will be unloaded and empty
     if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
+        if exists('s:job') && job_status(s:job) ==# 'run'
+            call job_stop(s:job)
+        endif
+
         let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
-        silent let output = systemlist(cmd)
-
-        if empty(output)
-            return s:error('cmake-help: no output from running "%s"', cmd)
-        endif
-
-        if v:shell_error
-            return s:error('cmake-help: error running "%s"', cmd)
-        endif
-
-        let bufnr = s:bufnew(bufname)
-        call setbufline(bufnr, 1, output)
-        call setbufvar(bufnr, '&modifiable', 0)
-        call setbufvar(bufnr, '&readonly', 1)
-        return bufnr
+        let s:job = job_start([&shell, &shellcmdflag, cmd], #{
+                \ out_mode: 'raw',
+                \ in_io: 'null',
+                \ err_cb: {_,msg -> s:error('cmake-help: %s', msg)},
+                \ close_cb: funcref('s:close_cb', [a:callback, bufname])
+                \ })
+        return
     endif
 
-    return bufnr(bufname)
+    " Buffer already exists with content, we don't have to call CMake again
+    call a:callback(bufnr(bufname))
+endfunction
+
+function! s:close_cb(callback, bufname, channel) abort
+    let output = []
+    while ch_status(a:channel, #{part: 'out'}) ==# 'buffered'
+        call extend(output, split(ch_readraw(a:channel), "\n"))
+    endwhile
+
+    if empty(output)
+        return s:error('cmake-help: no output from running "%s"', cmd)
+    endif
+
+    let bufnr = s:bufnew(a:bufname)
+    call setbufline(bufnr, 1, output)
+    call setbufvar(bufnr, '&modifiable', 0)
+    call setbufvar(bufnr, '&readonly', 1)
+    call a:callback(bufnr)
 endfunction
 
 function! s:popup_opts(bufnr) abort
@@ -191,30 +208,42 @@ function! s:popup_filter(winid, key) abort
     return v:false
 endfunction
 
-function! s:balloon_popup(word, tid) abort
-    let bufnr = s:help_buffer(a:word)
-    if !bufnr
+function! s:popup_cb(fun, bufnr) abort
+    if !a:bufnr
         return
     endif
-    let s:winid = popup_beval(bufnr, s:popup_opts(bufnr))
+    let s:winid = call(a:fun, [a:bufnr, s:popup_opts(a:bufnr)])
+endfunction
+
+function! s:preview_cb(mods, bufnr) abort
+    if !a:bufnr || bufwinnr(bufname(a:bufnr)) > 0
+        return
+    endif
+    silent execute a:mods 'pedit' fnameescape(bufname(a:bufnr))
 endfunction
 
 " Open CMake documentation for 'word' in the preview window
 function! cmakehelp#preview(mods, word) abort
-    let bufnr = s:help_buffer(a:word)
-    if !bufnr || bufwinnr(bufname(bufnr)) > 0
-        return
-    endif
-    silent execute a:mods 'pedit' fnameescape(bufname(bufnr))
+    call s:help_buffer(a:word, funcref('s:preview_cb', [a:mods]))
 endfunction
 
 " Open CMake documentation for 'word' in popup window at current cursor position
 function! cmakehelp#popup(word) abort
-    let bufnr = s:help_buffer(a:word)
-    if !bufnr
-        return
+    call s:help_buffer(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
+endfunction
+
+function! cmakehelp#balloonexpr() abort
+    if s:winid && !empty(popup_getpos(s:winid))
+        if s:lastword == v:beval_text
+            return ''
+        endif
+        call popup_close(s:winid)
+        let s:winid = 0
     endif
-    let s:winid = popup_atcursor(bufnr, s:popup_opts(bufnr))
+
+    let s:lastword = v:beval_text
+    call s:help_buffer(v:beval_text, funcref('s:popup_cb', [function('popup_beval')]))
+    return ''
 endfunction
 
 " Open CMake documentation for 'word' in a browser
@@ -226,8 +255,7 @@ function! cmakehelp#browser(word) abort
     if empty(a:word)
         let url = 'https://cmake.org/cmake/help/' .. s:version
     else
-        let group = get(s:lookup, a:word, get(s:lookup, tolower(a:word), ''))
-
+        let group = s:getgroup(a:word)
         if empty(group)
             return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
         endif
@@ -257,22 +285,6 @@ function! cmakehelp#browser(word) abort
             \ out_io: 'null',
             \ err_io: 'null'
             \ })
-endfunction
-
-function! cmakehelp#balloonexpr() abort
-    if s:winid && !empty(popup_getpos(s:winid))
-        if s:lastword == v:beval_text
-            return ''
-        endif
-        call popup_close(s:winid)
-        let s:winid = 0
-    endif
-
-    let s:lastword = v:beval_text
-    " We need a timer, or else: E523 Not allowed here
-    " Buffer can't be modified inside balloonexpr
-    call timer_start(1, funcref('s:balloon_popup', [v:beval_text]))
-    return ''
 endfunction
 
 function! cmakehelp#complete(arglead, cmdline, cursorpos) abort
