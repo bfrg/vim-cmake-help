@@ -23,7 +23,7 @@ command! -buffer -bar -nargs=1 -complete=customlist,cmakehelp#complete CMakeHelp
 " Open CMake documentation in a browser
 command! -buffer -bar -nargs=? -complete=customlist,cmakehelp#complete CMakeHelpOnline call cmakehelp#browser(<q-args>)
 
-nnoremap <silent><buffer> <plug>(cmake-help)        :<c-u>call cmakehelp#open('', expand('<cword>'))<cr>
+nnoremap <silent><buffer> <plug>(cmake-help)        :<c-u>call cmakehelp#preview('', expand('<cword>'))<cr>
 nnoremap <silent><buffer> <plug>(cmake-help-popup)  :<c-u>call cmakehelp#popup(expand('<cword>'))<cr>
 nnoremap <silent><buffer> <plug>(cmake-help-online) :<c-u>call cmakehelp#browser(expand('<cword>'))<cr>
 
