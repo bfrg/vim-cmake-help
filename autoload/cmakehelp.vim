@@ -146,34 +146,6 @@ function! s:close_cb(callback, bufname, channel) abort
     call a:callback(bufnr)
 endfunction
 
-function! s:popup_opts(bufnr) abort
-    let opts = #{
-            \ minwidth: s:get('minwidth'),
-            \ maxwidth: s:get('maxwidth'),
-            \ minheight: s:get('minheight'),
-            \ maxheight: s:get('maxheight'),
-            \ firstline: 1,
-            \ highlight: 'CMakeHelp',
-            \ padding: [0,1,1,1],
-            \ border: [1,0,0,0],
-            \ borderchars: [' '],
-            \ drag: v:true,
-            \ borderhighlight: ['CMakeHelpTitle'],
-            \ close: s:get('close'),
-            \ mapping: v:false,
-            \ scrollbar: s:get('scrollbar'),
-            \ scrollbarhighlight: 'CMakeHelpScrollbar',
-            \ scrollbarthumb: 'CMakeHelpThumb',
-            \ filter: funcref('s:popup_filter')
-            \ }
-
-    if s:get('title')
-        call extend(opts, #{title: bufname(a:bufnr)})
-    endif
-
-    return opts
-endfunction
-
 function! s:popup_filter(winid, key) abort
     if a:key ==# s:get('scrollup')
         let line = popup_getoptions(a:winid).firstline
@@ -206,7 +178,32 @@ function! s:popup_cb(fun, bufnr) abort
     if !a:bufnr
         return
     endif
-    let s:winid = call(a:fun, [a:bufnr, s:popup_opts(a:bufnr)])
+
+    let opts = #{
+            \ minwidth: s:get('minwidth'),
+            \ maxwidth: s:get('maxwidth'),
+            \ minheight: s:get('minheight'),
+            \ maxheight: s:get('maxheight'),
+            \ firstline: 1,
+            \ highlight: 'CMakeHelp',
+            \ padding: [0,1,1,1],
+            \ border: [1,0,0,0],
+            \ borderchars: [' '],
+            \ drag: v:true,
+            \ borderhighlight: ['CMakeHelpTitle'],
+            \ close: s:get('close'),
+            \ mapping: v:false,
+            \ scrollbar: s:get('scrollbar'),
+            \ scrollbarhighlight: 'CMakeHelpScrollbar',
+            \ scrollbarthumb: 'CMakeHelpThumb',
+            \ filter: funcref('s:popup_filter')
+            \ }
+
+    if s:get('title')
+        call extend(opts, #{title: bufname(a:bufnr)})
+    endif
+
+    let s:winid = a:fun(a:bufnr, opts)
 endfunction
 
 function! s:preview_cb(mods, bufnr) abort
