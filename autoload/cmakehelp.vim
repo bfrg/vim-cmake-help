@@ -52,6 +52,9 @@ let s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
 " Get the name of a CMake help buffer
 let s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
 
+" Stop any running jobs
+let s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s:job) : {-> 0}}
+
 function! s:error(...) abort
     echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
     return 0
@@ -98,10 +101,7 @@ function! s:openhelp(word, callback) abort
     " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
     " buffers to the buffer list, see :ls!, which will be unloaded and empty
     if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
-        if exists('s:job') && job_status(s:job) ==# 'run'
-            call job_stop(s:job)
-        endif
-
+        call s:job_stop()
         let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
         let s:job = job_start([&shell, &shellcmdflag, cmd], #{
                 \ out_mode: 'raw',
