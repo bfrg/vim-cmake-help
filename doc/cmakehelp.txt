@@ -8,7 +8,13 @@ License:    Same terms as Vim itself (see |license|)
 ==============================================================================
 INTRODUCTION                                                 *cmakehelp-intro*
 
-Plugin to quickly view CMake documentation inside Vim.
+View CMake documentation inside Vim.
+
+The plugin provides three methods for quickly displaying CMake documentation:
+1. Open the documentation in a new |:split| window.
+2. Open the documentation in a |popup-window| at the current cursor (or mouse
+   pointer) position.
+3. Open the CMake Reference Documentation directly in your browser.
 
 ==============================================================================
 USAGE                                                        *cmakehelp-usage*
@@ -22,8 +28,8 @@ Commands ~
             Open the CMake documentation for {arg} in a |popup-window|.
 
 :CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
-            Open the online CMake documentation for {arg} in the browser
-            specified by |cmakehelp.browser|.
+            Open the CMake Reference documentation for {arg} in the browser
+            specified by |cmakehelp.browser| (default: Firefox).
 
             When {arg} is not given, the command will open the start page
             https://cmake.org/cmake/help/vX.YY, where X.YY denotes the version
@@ -65,6 +71,8 @@ To enable this feature, add the following to after/ftplugin/cmake.vim: >
     setlocal balloonevalterm
     setlocal balloonexpr=cmakehelp#balloonexpr()
 <
+Moving the mouse pointer outside the current word closes the popup window.
+
 ==============================================================================
 CONFIGURATION                                               *cmakehelp-config*
 
@@ -144,7 +152,7 @@ The appearance of the popup window can be configured through the following
 highlight groups:
 
 CMakeHelp                                                       *hl-CMakeHelp*
-                    Popup window background and error text. This is the
+                    Popup window background and normal text. This is the
                     equivalent of the |hl-Normal| highlight group in regular
                     windows.
                     Default: |hl-Pmenu|
