@@ -8,6 +8,16 @@ The plugin provides three methods for quickly displaying CMake documentation:
    pointer) position.
 3. Open the [CMake Reference Documentation][cmake-doc] directly in your browser.
 
+<dl>
+  <p align="center">
+  <a href="https://asciinema.org/a/283915">
+    <img src="https://asciinema.org/a/283915.png" width="480">
+  </a>
+  </p>
+</dl>
+
+**Note:** This plugin requires at least Vim `8.1.1705`.
+
 
 ## Usage
 
@@ -19,8 +29,9 @@ The plugin provides three methods for quickly displaying CMake documentation:
 | `:CMakeHelpPopup {arg}`    | Open the CMake documentation for `{arg}` in a popup window.   |
 | `:CMakeHelpOnline [{arg}]` | Open the online CMake documentation for `{arg}` in a browser. |
 
-For example, `:CMakeHelpOnline target_compile_options` opens the documentation
-for [target\_compile\_options][target_compile_options] in your browser.
+For example, running `:CMakeHelpOnline target_compile_options` opens the
+documentation for [target\_compile\_options][target_compile_options] in your
+browser.
 
 You can set `keywordprg` directly to one of the commands. For instance, to open
 the CMake documentation for the word under the cursor in a popup window, add the
@@ -137,7 +148,9 @@ name. For more details see `:help packages`.
 Assuming [vim-plug][plug] is your favorite plugin manager, add the following to
 your `vimrc`:
 ```vim
-Plug 'bfrg/vim-cmake-help'
+if has('patch-8.1.1705')
+    Plug 'bfrg/vim-cmake-help'
+endif
 ```
 
 
