@@ -138,7 +138,7 @@ highlight groups:
 ```bash
 $ cd ~/.vim/pack/git-plugins/start
 $ git clone https://github.com/bfrg/vim-cmake-help
-$ vim -u NONE -c "helptags vim-qf-tooltip/doc" -c q
+$ vim -u NONE -c "helptags vim-cmake-help/doc" -c q
 ```
 **Note:** The directory name `git-plugins` is arbitrary, you can pick any other
 name. For more details see `:help packages`.
