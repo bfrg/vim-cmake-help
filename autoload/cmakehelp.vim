@@ -212,6 +212,13 @@ endfunction
 
 " Open CMake documentation for 'word' in popup window at current cursor position
 function! cmakehelp#popup(word) abort
+    if s:winid && !empty(popup_getpos(s:winid))
+        call s:job_stop()
+        call popup_close(s:winid)
+        let s:winid = 0
+    endif
+
+    let s:lastword = a:word
     call s:openhelp(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
 endfunction
 
@@ -220,6 +227,7 @@ function! cmakehelp#balloonexpr() abort
         if s:lastword == v:beval_text
             return ''
         endif
+        call s:job_stop()
         call popup_close(s:winid)
         let s:winid = 0
     endif
