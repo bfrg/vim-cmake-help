@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 27, 2019
+" Last Change:  Nov 28, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -11,7 +11,6 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 hi def link CMakeHelp           Pmenu
-hi def link CMakeHelpTitle      Pmenu
 hi def link CMakeHelpScrollbar  PmenuSbar
 hi def link CMakeHelpThumb      PmenuThumb
 
@@ -22,8 +21,6 @@ let s:defaults = #{
         \ maxwidth: 90,
         \ minheight: 5,
         \ maxheight: 30,
-        \ title: v:false,
-        \ close: 'none',
         \ scrollup: "\<s-pageup>",
         \ scrolldown: "\<s-pagedown>",
         \ top: "\<s-home>",
@@ -171,31 +168,20 @@ function! s:popup_cb(fun, bufnr) abort
         return
     endif
 
-    let opts = #{
+    let s:winid = a:fun(a:bufnr, #{
             \ minwidth: s:get('minwidth'),
             \ maxwidth: s:get('maxwidth'),
             \ minheight: s:get('minheight'),
             \ maxheight: s:get('maxheight'),
             \ firstline: 1,
             \ highlight: 'CMakeHelp',
-            \ padding: [0,1,1,1],
-            \ border: [1,0,0,0],
-            \ borderchars: [' '],
-            \ drag: v:true,
-            \ borderhighlight: ['CMakeHelpTitle'],
-            \ close: s:get('close'),
+            \ padding: [1,1,1,1],
             \ mapping: v:false,
             \ scrollbar: s:get('scrollbar'),
             \ scrollbarhighlight: 'CMakeHelpScrollbar',
             \ scrollbarthumb: 'CMakeHelpThumb',
             \ filter: funcref('s:popup_filter')
-            \ }
-
-    if s:get('title')
-        call extend(opts, #{title: bufname(a:bufnr)})
-    endif
-
-    let s:winid = a:fun(a:bufnr, opts)
+            \ })
 endfunction
 
 function! s:preview_cb(mods, bufnr) abort

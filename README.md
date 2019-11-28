@@ -89,8 +89,6 @@ variable must be a dictionary containing any of the following entries:
 | ------------- | ------------------------------------------------------------------- | --------------------- |
 | `exe`         | Path to `cmake` executable.                                         | value found in `$PATH`|
 | `browser`     | Browser executable.                                                 | `firefox`             |
-| `title`       | Display a title at the top of the popup window.                     | `0`                   |
-| `close`       | Mouse event for closing the popup window: `click`, `button`, `none` | `none`                |
 | `scrollbar`   | Display a scrollbar in the popup window.                            | `1`                   |
 | `minwidth`    | Minimum width of popup window.                                      | `60`                  |
 | `maxwidth`    | Maximum width of popup window.                                      | `90`                  |
@@ -101,16 +99,11 @@ variable must be a dictionary containing any of the following entries:
 | `top`         | Key for jumping to the top of the buffer in the popup window.       | <kbd>S-Home</kbd>     |
 | `bottom`      | Key for jumping to the botton of the buffer in the popup window.    | <kbd>S-End</kbd>      |
 
-When `close` is set to `click`, mouse clicks inside the text area of the popup
-window will close it. When `close` is set to `button`, an `X` will appear in the
-top right corner of the popup window that will close the window.
-
 Example:
 ```vim
 let g:cmakehelp = {
     \ 'exe': expand('~/.local/bin/cmake'),
     \ 'browser': 'open',
-    \ 'close': 'button',
     \ 'minwidth': 70,
     \ 'maxwidth': 70,
     \ 'minheight': 15,
@@ -126,7 +119,6 @@ highlight groups:
 | Highlight group     | Description                             | Default     |
 | ------------------- | --------------------------------------- | ----------- |
 | `CMakeHelp`         | Popup window background and normal text.| `Pmenu`     |
-| `CMakeHelpTitle`    | Title of popup window (top line).       | `Pmenu`     |
 | `CMakeHelpScrollbar`| Scrollbar of popup window.              | `PmenuSbar` |
 | `CMakeHelpThumb`    | Thumb of scrollbar.                     | `PmenuThumb`|
 

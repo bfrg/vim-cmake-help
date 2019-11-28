@@ -90,18 +90,6 @@ keys are supported:
 "browser" ~
             Command for opening the url.
             Default: "firefox"
-                                                             *cmakehelp.title*
-"title" ~
-            Display a title at the top of the popup window. The highlighting
-            can be configured through |hl-CMakeHelpTitle|.
-            Default: 0
-                                                             *cmakehelp.close*
-"close" ~
-            Mouse event for closing the popup window. When set to "click", any
-            mouse click in the popup window will close it. When set to
-            "button", an X is displayed in the top-right corner that can be
-            clicked to close the popup window.
-            Default: "none"
                                                          *cmakehelp.scrollbar*
 "scrollbar" ~
             Display a scrollbar in the popup window. The highlighting can be
@@ -156,14 +144,6 @@ CMakeHelp                                                       *hl-CMakeHelp*
                     equivalent of the |hl-Normal| highlight group in regular
                     windows.
                     Default: |hl-Pmenu|
-
-CMakeHelpTitle                                             *hl-CMakeHelpTitle*
-                    Title (top line) of popup window.
-                    Default: |hl-Pmenu|
-
-                    Note: The title of the popup window is set to something
-                    like >
-                        CMake Help: set_target_properties [command]
 
 CMakeHelpScrollbar                                     *hl-CMakeHelpScrollbar*
                     Highlight group name for the |popup-scrollbar|. The
