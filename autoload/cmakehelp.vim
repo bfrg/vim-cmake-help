@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 28, 2019
+" Last Change:  Nov 30, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -256,11 +256,12 @@ function! cmakehelp#browser(word) abort
         endif
     endif
 
-    let cmd = printf('exec %s %s &', s:get('browser'), url)
+    let cmd = s:get('browser') .. ' ' .. url
     return job_start([&shell, &shellcmdflag, cmd], #{
             \ in_io: 'null',
             \ out_io: 'null',
-            \ err_io: 'null'
+            \ err_io: 'null',
+            \ stoponexit: ''
             \ })
 endfunction
 
