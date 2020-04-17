@@ -89,6 +89,7 @@ function! s:openhelp(word, callback) abort
 
     let group = s:getgroup(a:word)
     if empty(group)
+        redraw
         return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
     endif
 
@@ -220,6 +221,7 @@ function! cmakehelp#browser(word) abort
     else
         let group = s:getgroup(a:word)
         if empty(group)
+            redraw
             return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
         endif
 
