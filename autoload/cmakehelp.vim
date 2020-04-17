@@ -41,7 +41,7 @@ let s:lastword = ''
 let s:winid = 0
 
 " Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
-let s:get = {k -> get(get(b:, 'cmakehelp', get(g:, 'cmakehelp', {})), k, get(s:defaults, k))}
+let s:get = {k -> get(b:, 'cmakehelp', get(g:, 'cmakehelp', {}))->get(k, s:defaults[k])}
 
 " Get the group of a CMake keyword
 let s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
@@ -244,8 +244,7 @@ function! cmakehelp#browser(word) abort
         endif
     endif
 
-    let cmd = s:get('browser') .. ' ' .. url
-    return job_start([&shell, &shellcmdflag, cmd], {
+    return job_start([&shell, &shellcmdflag, s:get('browser') .. ' ' .. url], {
             \ 'in_io': 'null',
             \ 'out_io': 'null',
             \ 'err_io': 'null',
