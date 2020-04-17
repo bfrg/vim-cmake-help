@@ -16,7 +16,10 @@ The plugin provides three methods for quickly displaying CMake documentation:
   </p>
 </dl>
 
-**Note:** This plugin requires at least Vim `8.1.1705`.
+
+## Requirements
+
+Vim `>= 8.1.2250`
 
 
 ## Usage
@@ -140,7 +143,7 @@ name. For more details see `:help packages`.
 Assuming [vim-plug][plug] is your favorite plugin manager, add the following to
 your `vimrc`:
 ```vim
-if has('patch-8.1.1705')
+if has('patch-8.1.2250')
     Plug 'bfrg/vim-cmake-help'
 endif
 ```

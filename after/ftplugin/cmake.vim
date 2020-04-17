@@ -3,11 +3,11 @@
 " File:         after/ftplugin/cmake.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 26, 2019
+" Last Change:  Apr 17, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
-if !has('patch-8.1.1705')
+if !has('patch-8.1.2250')
     finish
 endif
 

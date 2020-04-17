@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Nov 30, 2019
+" Last Change:  Apr 17, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -54,7 +54,6 @@ let s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s
 
 function! s:error(...) abort
     echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
-    return 0
 endfunction
 
 " Obtain CMake version from 'cmake --version'
@@ -137,30 +136,17 @@ endfunction
 
 function! s:popup_filter(winid, key) abort
     if a:key ==# s:get('scrollup')
-        let line = popup_getoptions(a:winid).firstline
-        let newline = (line - 2) > 0 ? (line - 2) : 1
-        call popup_setoptions(a:winid, #{firstline: newline})
-        return v:true
+        call win_execute(a:winid, "normal! \<c-y>")
     elseif a:key ==# s:get('scrolldown')
-        let line = popup_getoptions(a:winid).firstline
-        " TODO use line('$', winid) in the future, requires 8.1.1967
-        call win_execute(a:winid, 'let g:nlines = line("$")')
-        let newline = line < g:nlines ? (line + 2) : g:nlines
-        call popup_setoptions(a:winid, #{firstline: newline})
-        unlet g:nlines
-        return v:true
+        call win_execute(a:winid, "normal! \<c-e>")
     elseif a:key ==# s:get('top')
-        call popup_setoptions(a:winid, #{firstline: 1})
-        return v:true
+        call win_execute(a:winid, 'normal! gg')
     elseif a:key ==# s:get('bottom')
-        let height = popup_getpos(a:winid).core_height
-        call win_execute(a:winid, 'let g:nlines = line("$")')
-        let newline = g:nlines >= height ? (g:nlines - height + 1) : 1
-        call popup_setoptions(a:winid, #{firstline: newline})
-        unlet g:nlines
-        return v:true
+        call win_execute(a:winid, 'normal! G')
+    else
+        return v:false
     endif
-    return v:false
+    return v:true
 endfunction
 
 function! s:popup_cb(fun, bufnr) abort
@@ -173,13 +159,13 @@ function! s:popup_cb(fun, bufnr) abort
             \ maxwidth: s:get('maxwidth'),
             \ minheight: s:get('minheight'),
             \ maxheight: s:get('maxheight'),
-            \ firstline: 1,
             \ highlight: 'CMakeHelp',
-            \ padding: [1,1,1,1],
+            \ padding: [],
             \ mapping: v:false,
             \ scrollbar: s:get('scrollbar'),
             \ scrollbarhighlight: 'CMakeHelpScrollbar',
             \ scrollbarthumb: 'CMakeHelpThumb',
+            \ filtermode: 'n',
             \ filter: funcref('s:popup_filter')
             \ })
 endfunction
