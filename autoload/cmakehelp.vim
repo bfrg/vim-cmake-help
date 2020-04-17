@@ -14,18 +14,18 @@ hi def link CMakeHelp           Pmenu
 hi def link CMakeHelpScrollbar  PmenuSbar
 hi def link CMakeHelpThumb      PmenuThumb
 
-let s:defaults = #{
-        \ exe: 'cmake',
-        \ browser: 'firefox',
-        \ minwidth: 60,
-        \ maxwidth: 90,
-        \ minheight: 5,
-        \ maxheight: 30,
-        \ scrollup: "\<s-pageup>",
-        \ scrolldown: "\<s-pagedown>",
-        \ top: "\<s-home>",
-        \ bottom: "\<s-end>",
-        \ scrollbar: v:true
+let s:defaults = {
+        \ 'exe': 'cmake',
+        \ 'browser': 'firefox',
+        \ 'minwidth': 60,
+        \ 'maxwidth': 90,
+        \ 'minheight': 5,
+        \ 'maxheight': 30,
+        \ 'scrollup': "\<s-pageup>",
+        \ 'scrolldown': "\<s-pagedown>",
+        \ 'top': "\<s-home>",
+        \ 'bottom': "\<s-end>",
+        \ 'scrollbar': v:true
         \ }
 
 " Lookup table, example: s:lookup['set_target_properties'] -> 'command'
@@ -99,11 +99,11 @@ function! s:openhelp(word, callback) abort
     if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
         call s:job_stop()
         let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
-        let s:job = job_start([&shell, &shellcmdflag, cmd], #{
-                \ out_mode: 'raw',
-                \ in_io: 'null',
-                \ err_cb: {_,msg -> s:error('cmake-help: %s', msg)},
-                \ close_cb: funcref('s:close_cb', [a:callback, bufname])
+        let s:job = job_start([&shell, &shellcmdflag, cmd], {
+                \ 'out_mode': 'raw',
+                \ 'in_io': 'null',
+                \ 'err_cb': {_,msg -> s:error('cmake-help: %s', msg)},
+                \ 'close_cb': funcref('s:close_cb', [a:callback, bufname])
                 \ })
         return
     endif
@@ -114,7 +114,7 @@ endfunction
 
 function! s:close_cb(callback, bufname, channel) abort
     let output = []
-    while ch_status(a:channel, #{part: 'out'}) ==# 'buffered'
+    while ch_status(a:channel, {'part': 'out'}) ==# 'buffered'
         call extend(output, split(ch_readraw(a:channel), "\n"))
     endwhile
 
@@ -154,19 +154,19 @@ function! s:popup_cb(fun, bufnr) abort
         return
     endif
 
-    let s:winid = a:fun(a:bufnr, #{
-            \ minwidth: s:get('minwidth'),
-            \ maxwidth: s:get('maxwidth'),
-            \ minheight: s:get('minheight'),
-            \ maxheight: s:get('maxheight'),
-            \ highlight: 'CMakeHelp',
-            \ padding: [],
-            \ mapping: v:false,
-            \ scrollbar: s:get('scrollbar'),
-            \ scrollbarhighlight: 'CMakeHelpScrollbar',
-            \ scrollbarthumb: 'CMakeHelpThumb',
-            \ filtermode: 'n',
-            \ filter: funcref('s:popup_filter')
+    let s:winid = a:fun(a:bufnr, {
+            \ 'minwidth': s:get('minwidth'),
+            \ 'maxwidth': s:get('maxwidth'),
+            \ 'minheight': s:get('minheight'),
+            \ 'maxheight': s:get('maxheight'),
+            \ 'highlight': 'CMakeHelp',
+            \ 'padding': [],
+            \ 'mapping': v:false,
+            \ 'scrollbar': s:get('scrollbar'),
+            \ 'scrollbarhighlight': 'CMakeHelpScrollbar',
+            \ 'scrollbarthumb': 'CMakeHelpThumb',
+            \ 'filtermode': 'n',
+            \ 'filter': funcref('s:popup_filter')
             \ })
 endfunction
 
@@ -243,11 +243,11 @@ function! cmakehelp#browser(word) abort
     endif
 
     let cmd = s:get('browser') .. ' ' .. url
-    return job_start([&shell, &shellcmdflag, cmd], #{
-            \ in_io: 'null',
-            \ out_io: 'null',
-            \ err_io: 'null',
-            \ stoponexit: ''
+    return job_start([&shell, &shellcmdflag, cmd], {
+            \ 'in_io': 'null',
+            \ 'out_io': 'null',
+            \ 'err_io': 'null',
+            \ 'stoponexit': ''
             \ })
 endfunction
 
