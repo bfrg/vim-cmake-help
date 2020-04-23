@@ -36,9 +36,9 @@ For example, running `:CMakeHelpOnline target_compile_options` opens the
 documentation for [target\_compile\_options][target_compile_options] in your
 browser.
 
-You can set `keywordprg` directly to one of the commands. For instance, to open
-the CMake documentation for the word under the cursor in a popup window, add the
-following to `~/.vim/after/ftplugin/cmake.vim`:
+You can set `keywordprg` directly to one of the commands. For example, to open
+the CMake documentation for the word under the cursor in a popup window with
+<kbd>K</kbd>, add the following to `~/.vim/after/ftplugin/cmake.vim`:
 ```vim
 " Open CMake documentation for current word with K
 setlocal keywordprg=:CMakeHelpPopup
@@ -111,7 +111,7 @@ let g:cmakehelp = {
     \ 'maxwidth': 70,
     \ 'minheight': 15,
     \ 'maxheight': 15
-}
+    \ }
 ```
 
 #### Popup highlightings
