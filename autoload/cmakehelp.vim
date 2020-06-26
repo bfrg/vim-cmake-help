@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Apr 17, 2020
+" Last Change:  Jun 26, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -136,6 +136,10 @@ function! s:close_cb(callback, bufname, channel) abort
 endfunction
 
 function! s:popup_filter(winid, key) abort
+    if line('$', a:winid) == popup_getpos(a:winid).core_height
+        return v:false
+    endif
+    call popup_setoptions(a:winid, {'minheight': popup_getpos(a:winid).core_height})
     if a:key ==# s:get('scrollup')
         call win_execute(a:winid, "normal! \<c-y>")
     elseif a:key ==# s:get('scrolldown')
