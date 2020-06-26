@@ -6,7 +6,7 @@ License:    Same terms as Vim itself (see |license|)
 
 
 ==============================================================================
-INTRODUCTION                                                 *cmakehelp-intro*
+INTRODUCTION                                                      *cmake-help*
 
 View CMake documentation inside Vim.
 
@@ -17,7 +17,7 @@ The plugin provides three methods for quickly displaying CMake documentation:
 3. Open the CMake Reference Documentation directly in your browser.
 
 ==============================================================================
-USAGE                                                        *cmakehelp-usage*
+USAGE                                                       *cmake-help-usage*
 
 Commands ~
 
@@ -25,7 +25,13 @@ Commands ~
             Open the CMake documentation for {arg} in a 'previewwindow'.
 
 :CMakeHelpPopup {arg}                                        *:CMakeHelpPopup*
-            Open the CMake documentation for {arg} in a |popup-window|.
+            Open the CMake documentation for {arg} in a |popup-window| at the
+            current cursor position.
+
+            For example, to open the CMake documentation for the word under
+            the cursor in a popup window with |K|, use 'keywordprg': >
+                " in ~/.vim/after/ftplugin/cmake.vim
+                setlocal keywordprg=:CMakeHelpPopup
 
 :CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
             Open the CMake Reference documentation for {arg} in the browser
@@ -62,7 +68,7 @@ Mappings ~
                 nmap <buffer> <space>h <plug>(cmake-help-online)
 <
 Mouse hovers ~
-                                                       *cmakehelp-balloonexpr*
+                                                      *cmake-help-balloonexpr*
 A 'balloonexpr' is provided that will display the CMake documentation for the
 word under the mouse pointer in a popup window.
 
@@ -74,10 +80,10 @@ To enable this feature, add the following to after/ftplugin/cmake.vim: >
 Moving the mouse pointer outside the current word closes the popup window.
 
 ==============================================================================
-CONFIGURATION                                               *cmakehelp-config*
+CONFIGURATION                                              *cmake-help-config*
 
-b:cmakehelp                                                      *b:cmakehelp*
-g:cmakehelp                                                      *g:cmakehelp*
+*b:cmakehelp*
+*g:cmakehelp*
 
 Options can be set either through the buffer-local |Dictionary| b:cmakehelp,
 or alternatively through the global |Dictionary| g:cmakehelp. The following
@@ -133,8 +139,8 @@ keys are supported:
 Note: The |buffer-variable| b:cmakehelp must be specified for cmake filetypes,
 for example, in after/ftplugin/cmake.vim.
 
-                                                         *cmakehelp-highlight*
-Popup Window Highlight Groups ~
+==============================================================================
+HIGHLIGHTING                                            *cmake-help-highlight*
 
 The appearance of the popup window can be configured through the following
 highlight groups:
