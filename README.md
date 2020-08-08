@@ -28,7 +28,7 @@ Vim `>= 8.1.2250`
 
 | Command                    | Description                                                   |
 | -------------------------- | ------------------------------------------------------------- |
-| `:CMakeHelp {arg}`         | Open the CMake documentation for `{arg}` in a `previewwindow`.|
+| `:CMakeHelp {arg}`         | Open the CMake documentation for `{arg}` in a preview window. |
 | `:CMakeHelpPopup {arg}`    | Open the CMake documentation for `{arg}` in a popup window.   |
 | `:CMakeHelpOnline [{arg}]` | Open the online CMake documentation for `{arg}` in a browser. |
 
@@ -36,7 +36,7 @@ For example, running `:CMakeHelpOnline target_compile_options` opens the
 documentation for [target\_compile\_options][target_compile_options] in your
 browser.
 
-You can set `keywordprg` directly to one of the commands. For example, to open
+You can set `keywordprg` directly to one of the commands. For instance, to open
 the CMake documentation for the word under the cursor in a popup window with
 <kbd>K</kbd>, add the following to `~/.vim/after/ftplugin/cmake.vim`:
 ```vim
@@ -44,16 +44,16 @@ the CMake documentation for the word under the cursor in a popup window with
 setlocal keywordprg=:CMakeHelpPopup
 ```
 
-The popup window is closed when the cursor is moved outside the current word. It
-can also be closed by pressing <kbd>CTRL-C</kbd>.
+The popup window closes when the cursor is moved in any direction. It can also
+be closed by pressing <kbd>CTRL-C</kbd>.
 
 #### Mappings
 
-| Mapping                    | Description                                                                      |
-| -------------------------- | -------------------------------------------------------------------------------- |
-| `<plug>(cmake-help)`       | Open the CMake documentation for the word under the cursor in a `previewwindow`. |
-| `<plug>(cmake-help-popup)` | Open the CMake documentation for the word under the cursor in a popup window.    |
-| `<plug>(cmake-help-online)`| Open the online CMake documentation for the word under the cursor in a browser.  |
+| Mapping                    | Description                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `<plug>(cmake-help)`       | Open the CMake documentation for the word under the cursor in a preview window. |
+| `<plug>(cmake-help-popup)` | Open the CMake documentation for the word under the cursor in a popup window.   |
+| `<plug>(cmake-help-online)`| Open the online CMake documentation for the word under the cursor in a browser. |
 
 Example mappings:
 ```vim

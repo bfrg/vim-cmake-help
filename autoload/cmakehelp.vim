@@ -159,6 +159,7 @@ function s:close_cb_popup(fun, bufnr) abort
     endif
 
     let s:winid = a:fun(a:bufnr, {
+            \ 'moved': 'any',
             \ 'minwidth': s:get('minwidth'),
             \ 'maxwidth': s:get('maxwidth'),
             \ 'minheight': s:get('minheight'),
