@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Jun 26, 2020
+" Last Change:  Aug 8, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -52,12 +52,12 @@ let s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
 " Stop any running jobs
 let s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s:job) : {-> 0}}
 
-function! s:error(...) abort
+function s:error(...)
     echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
 endfunction
 
 " Obtain CMake version from 'cmake --version'
-function! s:init_cmake_version() abort
+function s:init_cmake_version() abort
     let output = systemlist(s:get('exe') .. ' --version')[0]
     if v:shell_error
         let s:version = 'latest'
@@ -68,7 +68,7 @@ endfunction
 
 " Initialize lookup-table for finding the group (command, property, variable) of
 " a CMake keyword
-function! s:init_lookup() abort
+function s:init_lookup() abort
     let groups = ['command', 'manual', 'module', 'policy', 'property', 'variable']
     for i in groups
         silent let words = systemlist(printf('%s --help-%s-list', s:get('exe'), i))
@@ -82,7 +82,7 @@ endfunction
 " The output will be appended to a prepared buffer. 'callback' is called with
 " one argument, the buffer number of the prepared buffer and is supposed to open
 " a window with the passed buffer (popup window or normal window)
-function! s:openhelp(word, callback) abort
+function s:openhelp(word, callback) abort
     if empty(a:word)
         return
     endif
@@ -113,7 +113,7 @@ function! s:openhelp(word, callback) abort
     call a:callback(bufnr(bufname))
 endfunction
 
-function! s:close_cb(callback, bufname, channel) abort
+function s:close_cb(callback, bufname, channel) abort
     let output = []
     while ch_status(a:channel, {'part': 'out'}) ==# 'buffered'
         call extend(output, split(ch_readraw(a:channel), "\n"))
@@ -135,7 +135,7 @@ function! s:close_cb(callback, bufname, channel) abort
     call a:callback(bufnr)
 endfunction
 
-function! s:popup_filter(winid, key) abort
+function s:popup_filter(winid, key) abort
     if line('$', a:winid) == popup_getpos(a:winid).core_height
         return v:false
     endif
@@ -154,7 +154,7 @@ function! s:popup_filter(winid, key) abort
     return v:true
 endfunction
 
-function! s:popup_cb(fun, bufnr) abort
+function s:popup_cb(fun, bufnr) abort
     if !a:bufnr
         return
     endif
@@ -175,7 +175,7 @@ function! s:popup_cb(fun, bufnr) abort
             \ })
 endfunction
 
-function! s:preview_cb(mods, bufnr) abort
+function s:preview_cb(mods, bufnr) abort
     if !a:bufnr || bufwinnr(bufname(a:bufnr)) > 0
         return
     endif
@@ -183,12 +183,12 @@ function! s:preview_cb(mods, bufnr) abort
 endfunction
 
 " Open CMake documentation for 'word' in the preview window
-function! cmakehelp#preview(mods, word) abort
+function cmakehelp#preview(mods, word) abort
     call s:openhelp(a:word, funcref('s:preview_cb', [a:mods]))
 endfunction
 
 " Open CMake documentation for 'word' in popup window at current cursor position
-function! cmakehelp#popup(word) abort
+function cmakehelp#popup(word) abort
     if s:winid && !empty(popup_getpos(s:winid))
         call s:job_stop()
         call popup_close(s:winid)
@@ -199,7 +199,7 @@ function! cmakehelp#popup(word) abort
     call s:openhelp(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
 endfunction
 
-function! cmakehelp#balloonexpr() abort
+function cmakehelp#balloonexpr() abort
     if s:winid && !empty(popup_getpos(s:winid))
         if s:lastword == v:beval_text
             return ''
@@ -215,7 +215,7 @@ function! cmakehelp#balloonexpr() abort
 endfunction
 
 " Open CMake documentation for 'word' in a browser
-function! cmakehelp#browser(word) abort
+function cmakehelp#browser(word) abort
     if empty(s:version)
         call s:init_cmake_version()
     endif
@@ -256,7 +256,7 @@ function! cmakehelp#browser(word) abort
             \ })
 endfunction
 
-function! cmakehelp#complete(arglead, cmdline, cursorpos) abort
+function cmakehelp#complete(arglead, cmdline, cursorpos) abort
     return keys(s:lookup)->filter({_,i -> match(i, a:arglead) == 0})->sort()
 endfunction
 
