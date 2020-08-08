@@ -153,7 +153,7 @@ function s:popup_filter(winid, key) abort
     return v:true
 endfunction
 
-function s:popup_cb(fun, bufnr) abort
+function s:close_cb_popup(fun, bufnr) abort
     if !a:bufnr
         return
     endif
@@ -173,7 +173,7 @@ function s:popup_cb(fun, bufnr) abort
             \ })
 endfunction
 
-function s:preview_cb(mods, bufnr) abort
+function s:close_cb_preview(mods, bufnr) abort
     if !a:bufnr || bufwinnr(bufname(a:bufnr)) > 0
         return
     endif
@@ -182,7 +182,7 @@ endfunction
 
 " Open CMake documentation for 'word' in the preview window
 function cmakehelp#preview(mods, word) abort
-    call s:openhelp(a:word, funcref('s:preview_cb', [a:mods]))
+    call s:openhelp(a:word, funcref('s:close_cb_preview', [a:mods]))
 endfunction
 
 " Open CMake documentation for 'word' in popup window at current cursor position
@@ -194,7 +194,7 @@ function cmakehelp#popup(word) abort
     endif
 
     let s:lastword = a:word
-    call s:openhelp(a:word, funcref('s:popup_cb', [function('popup_atcursor')]))
+    call s:openhelp(a:word, funcref('s:close_cb_popup', [function('popup_atcursor')]))
 endfunction
 
 function cmakehelp#balloonexpr() abort
@@ -208,7 +208,7 @@ function cmakehelp#balloonexpr() abort
     endif
 
     let s:lastword = v:beval_text
-    call s:openhelp(v:beval_text, funcref('s:popup_cb', [function('popup_beval')]))
+    call s:openhelp(v:beval_text, funcref('s:close_cb_popup', [function('popup_beval')]))
     return ''
 endfunction
 
