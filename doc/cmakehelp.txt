@@ -96,11 +96,6 @@ keys are supported:
 "browser" ~
             Command for opening the url.
             Default: "firefox"
-                                                         *cmakehelp.scrollbar*
-"scrollbar" ~
-            Display a scrollbar in the popup window. The highlighting can be
-            configured through |hl-CMakeHelpScrollbar| and |hl-CMakeHelpThumb|.
-            Default: 1
                                                           *cmakehelp.minwidth*
 "minwidth" ~
             Minimum width of the popup window.

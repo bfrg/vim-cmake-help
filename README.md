@@ -92,7 +92,6 @@ variable must be a dictionary containing any of the following entries:
 | ------------- | ------------------------------------------------------------------- | --------------------- |
 | `exe`         | Path to `cmake` executable.                                         | value found in `$PATH`|
 | `browser`     | Browser executable.                                                 | `firefox`             |
-| `scrollbar`   | Display a scrollbar in the popup window.                            | `1`                   |
 | `minwidth`    | Minimum width of popup window.                                      | `60`                  |
 | `maxwidth`    | Maximum width of popup window.                                      | `90`                  |
 | `minheight`   | Minimum height of popup window.                                     | `5`                   |

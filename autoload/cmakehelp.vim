@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Aug 8, 2020
+" Last Change:  Aug 9, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -24,8 +24,7 @@ const s:defaults = {
         \ 'scrollup': "\<s-pageup>",
         \ 'scrolldown': "\<s-pagedown>",
         \ 'top': "\<s-home>",
-        \ 'bottom': "\<s-end>",
-        \ 'scrollbar': v:true
+        \ 'bottom': "\<s-end>"
         \ }
 
 " Lookup table, example: s:lookup['set_target_properties'] -> 'command'
@@ -167,7 +166,6 @@ function s:popup_cb(fun, bufnr) abort
             \ 'highlight': 'CMakeHelp',
             \ 'padding': [],
             \ 'mapping': v:false,
-            \ 'scrollbar': s:get('scrollbar'),
             \ 'scrollbarhighlight': 'CMakeHelpScrollbar',
             \ 'scrollbarthumb': 'CMakeHelpThumb',
             \ 'filtermode': 'n',
