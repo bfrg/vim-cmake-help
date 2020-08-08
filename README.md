@@ -92,10 +92,6 @@ variable must be a dictionary containing any of the following entries:
 | ------------- | ------------------------------------------------------------------- | --------------------- |
 | `exe`         | Path to `cmake` executable.                                         | value found in `$PATH`|
 | `browser`     | Browser executable.                                                 | `firefox`             |
-| `minwidth`    | Minimum width of popup window.                                      | `60`                  |
-| `maxwidth`    | Maximum width of popup window.                                      | `90`                  |
-| `minheight`   | Minimum height of popup window.                                     | `5`                   |
-| `maxheight`   | Maximum height of popup window.                                     | `30`                  |
 | `scrollup`    | Key for scrolling the text up in the popup window.                  | <kbd>S-PageUp</kbd>   |
 | `scrolldown`  | Key for scrolling the text down in the popup window.                | <kbd>S-PageDown</kbd> |
 | `top`         | Key for jumping to the top of the buffer in the popup window.       | <kbd>S-Home</kbd>     |
@@ -104,13 +100,9 @@ variable must be a dictionary containing any of the following entries:
 Example:
 ```vim
 let g:cmakehelp = {
-    \ 'exe': expand('~/.local/bin/cmake'),
-    \ 'browser': 'open',
-    \ 'minwidth': 70,
-    \ 'maxwidth': 70,
-    \ 'minheight': 15,
-    \ 'maxheight': 15
-    \ }
+        \ 'exe': expand('~/.local/bin/cmake'),
+        \ 'browser': 'xdg-open'
+        \ }
 ```
 
 #### Popup highlightings

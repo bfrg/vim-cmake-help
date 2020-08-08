@@ -45,7 +45,7 @@ Mappings ~
 
 <plug>(cmake-help)                                        *<plug>(cmake-help)*
             Open the CMake documentation for the current word under the cursor
-            in a 'previewwindow'.
+            in a |preview-window|.
 
             Example: >
                 " in ~/.vim/after/ftplugin/cmake.vim
@@ -96,22 +96,6 @@ keys are supported:
 "browser" ~
             Command for opening the url.
             Default: "firefox"
-                                                          *cmakehelp.minwidth*
-"minwidth" ~
-            Minimum width of the popup window.
-            Default: 60
-                                                          *cmakehelp.maxwidth*
-"maxwidth" ~
-            Maximum width of the popup window.
-            Default: 90
-                                                         *cmakehelp.minheight*
-"minheight" ~
-            Minimum height of the popup window.
-            Default: 5
-                                                         *cmakehelp.maxheight*
-"maxheight" ~
-            Maximum height of the popup window.
-            Default: 30
                                                           *cmakehelp.scrollup*
 "scrollup" ~
             Key to press for scrolling the text up in the popup window.

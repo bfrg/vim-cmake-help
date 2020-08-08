@@ -17,10 +17,6 @@ hi def link CMakeHelpThumb      PmenuThumb
 const s:defaults = {
         \ 'exe': 'cmake',
         \ 'browser': 'firefox',
-        \ 'minwidth': 60,
-        \ 'maxwidth': 90,
-        \ 'minheight': 5,
-        \ 'maxheight': 30,
         \ 'scrollup': "\<s-pageup>",
         \ 'scrolldown': "\<s-pagedown>",
         \ 'top': "\<s-home>",
@@ -158,12 +154,24 @@ function s:close_cb_popup(fun, bufnr) abort
         return
     endif
 
+    let buflines = getbufline(a:bufnr, 1, '$')
+    let textwidth = len(buflines)
+            \ ->range()
+            \ ->map({_,i -> strdisplaywidth(buflines[i])})
+            \ ->max()
+
+    " 2 for left+right padding + 1 for scrollbar = 3
+    let width = textwidth + 3 > &columns ? &columns - 3 : textwidth
+    let pos = screenpos(win_getid(), line('.'), col('.'))
+    let col = &columns - pos.curscol < width ? &columns - width : pos.curscol
+
     let s:winid = a:fun(a:bufnr, {
+            \ 'col': col,
             \ 'moved': 'any',
-            \ 'minwidth': s:get('minwidth'),
-            \ 'maxwidth': s:get('maxwidth'),
-            \ 'minheight': s:get('minheight'),
-            \ 'maxheight': s:get('maxheight'),
+            \ 'minwidth': width,
+            \ 'maxwidth': width,
+            \ 'maxheight': max([&lines - pos.row, pos.row]),
+            \ 'wrap': v:true,
             \ 'highlight': 'CMakeHelp',
             \ 'padding': [],
             \ 'mapping': v:false,
@@ -172,6 +180,8 @@ function s:close_cb_popup(fun, bufnr) abort
             \ 'filtermode': 'n',
             \ 'filter': funcref('s:popup_filter')
             \ })
+
+    call setwinvar(s:winid, '&breakindent', 1)
 endfunction
 
 function s:close_cb_preview(mods, bufnr) abort
