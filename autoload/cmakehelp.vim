@@ -14,7 +14,7 @@ hi def link CMakeHelp           Pmenu
 hi def link CMakeHelpScrollbar  PmenuSbar
 hi def link CMakeHelpThumb      PmenuThumb
 
-let s:defaults = {
+const s:defaults = {
         \ 'exe': 'cmake',
         \ 'browser': 'firefox',
         \ 'minwidth': 60,
@@ -41,16 +41,16 @@ let s:lastword = ''
 let s:winid = 0
 
 " Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
-let s:get = {k -> get(b:, 'cmakehelp', get(g:, 'cmakehelp', {}))->get(k, s:defaults[k])}
+const s:get = {k -> get(b:, 'cmakehelp', get(g:, 'cmakehelp', {}))->get(k, s:defaults[k])}
 
 " Get the group of a CMake keyword
-let s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
+const s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
 
 " Get the name of a CMake help buffer
-let s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
+const s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
 
 " Stop any running jobs
-let s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s:job) : {-> 0}}
+const s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s:job) : {-> 0}}
 
 function s:error(...)
     echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
@@ -58,7 +58,7 @@ endfunction
 
 " Obtain CMake version from 'cmake --version'
 function s:init_cmake_version() abort
-    let output = systemlist(s:get('exe') .. ' --version')[0]
+    const output = systemlist(s:get('exe') .. ' --version')[0]
     if v:shell_error
         let s:version = 'latest'
         return
@@ -69,7 +69,7 @@ endfunction
 " Initialize lookup-table for finding the group (command, property, variable) of
 " a CMake keyword
 function s:init_lookup() abort
-    let groups = ['command', 'manual', 'module', 'policy', 'property', 'variable']
+    const groups = ['command', 'manual', 'module', 'policy', 'property', 'variable']
     for i in groups
         silent let words = systemlist(printf('%s --help-%s-list', s:get('exe'), i))
         for k in words
@@ -87,13 +87,13 @@ function s:openhelp(word, callback) abort
         return
     endif
 
-    let group = s:getgroup(a:word)
+    const group = s:getgroup(a:word)
     if empty(group)
         redraw
         return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
     endif
 
-    let bufname = s:bufname(group, a:word)
+    const bufname = s:bufname(group, a:word)
 
     " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
     " buffers to the buffer list, see :ls!, which will be unloaded and empty
@@ -123,7 +123,7 @@ function s:close_cb(callback, bufname, channel) abort
         return s:error('cmake-help: no output from running "%s"', cmd)
     endif
 
-    let bufnr = bufadd(a:bufname)
+    const bufnr = bufadd(a:bufname)
     silent call bufload(bufnr)
     call setbufvar(bufnr, '&swapfile', 0)
     call setbufvar(bufnr, '&buftype', 'nofile')
@@ -221,31 +221,21 @@ function cmakehelp#browser(word) abort
     endif
 
     if empty(a:word)
-        let url = 'https://cmake.org/cmake/help/' .. s:version
+        const url = 'https://cmake.org/cmake/help/' .. s:version
     else
-        let group = s:getgroup(a:word)
+        const group = s:getgroup(a:word)
         if empty(group)
             redraw
             return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
         endif
 
-        if group ==# 'manual'
-            let word = substitute(a:word[:-2], '(', '.', '')
-        else
-            let word = substitute(a:word, '<\|>', '', 'g')
-        endif
+        const word = group ==# 'manual'
+                \ ? substitute(a:word[:-2], '(', '.', '')
+                \ : substitute(a:word, '<\|>', '', 'g')
 
-        let url = printf('https://cmake.org/cmake/help/%s/%s/%s.html',
-                \ s:version,
-                \ group,
-                \ word
-                \ )
-
-        if group ==# 'property'
-            let url = printf('https://cmake.org/cmake/help/%s/manual/cmake-properties.7.html',
-                    \ s:version
-                    \ )
-        endif
+        const url = group ==# 'property'
+                \ ? printf('https://cmake.org/cmake/help/%s/manual/cmake-properties.7.html', s:version)
+                \ : printf('https://cmake.org/cmake/help/%s/%s/%s.html', s:version, group, word)
     endif
 
     return job_start([&shell, &shellcmdflag, s:get('browser') .. ' ' .. url], {
