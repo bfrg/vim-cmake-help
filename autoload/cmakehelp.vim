@@ -3,7 +3,7 @@
 " File:         autoload/cmakehelp.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Aug 9, 2020
+" Last Change:  Aug 23, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -134,7 +134,6 @@ function s:popup_filter(winid, key) abort
     if line('$', a:winid) == popup_getpos(a:winid).core_height
         return v:false
     endif
-    call popup_setoptions(a:winid, {'minheight': popup_getpos(a:winid).core_height})
     if a:key ==# s:get('scrollup')
         call win_execute(a:winid, "normal! \<c-y>")
     elseif a:key ==# s:get('scrolldown')
@@ -146,10 +145,11 @@ function s:popup_filter(winid, key) abort
     else
         return v:false
     endif
+    call popup_setoptions(a:winid, {'minheight': popup_getpos(a:winid).core_height})
     return v:true
 endfunction
 
-function s:close_cb_popup(fun, bufnr) abort
+function s:close_cb_popup(fun, lnum, col, bufnr) abort
     if !a:bufnr
         return
     endif
@@ -162,7 +162,7 @@ function s:close_cb_popup(fun, bufnr) abort
 
     " 2 for left+right padding + 1 for scrollbar = 3
     let width = textwidth + 3 > &columns ? &columns - 3 : textwidth
-    let pos = screenpos(win_getid(), line('.'), col('.'))
+    let pos = screenpos(win_getid(), a:lnum, a:col)
     let col = &columns - pos.curscol < width ? &columns - width : pos.curscol
 
     let s:winid = a:fun(a:bufnr, {
@@ -205,7 +205,11 @@ function cmakehelp#popup(word) abort
     endif
 
     let s:lastword = a:word
-    call s:openhelp(a:word, funcref('s:close_cb_popup', [function('popup_atcursor')]))
+    call s:openhelp(a:word, funcref('s:close_cb_popup', [
+            \ function('popup_atcursor'),
+            \ line('.'),
+            \ col('.')
+            \ ]))
 endfunction
 
 function cmakehelp#balloonexpr() abort
@@ -219,7 +223,11 @@ function cmakehelp#balloonexpr() abort
     endif
 
     let s:lastword = v:beval_text
-    call s:openhelp(v:beval_text, funcref('s:close_cb_popup', [function('popup_beval')]))
+    call s:openhelp(v:beval_text, funcref('s:close_cb_popup', [
+            \ function('popup_beval'),
+            \ v:beval_lnum,
+            \ v:beval_col
+            \ ]))
     return ''
 endfunction
 
