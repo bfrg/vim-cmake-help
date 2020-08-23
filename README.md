@@ -94,6 +94,7 @@ variable must be a dictionary containing any of the following entries:
 | `browser`     | Browser executable.                                                 | `firefox`             |
 | `scrollup`    | Key for scrolling the text up in the popup window.                  | <kbd>S-PageUp</kbd>   |
 | `scrolldown`  | Key for scrolling the text down in the popup window.                | <kbd>S-PageDown</kbd> |
+| `maxheight`   | Maximum height for popup window. Set to `0` for maximum available.  | `0`                   |
 | `top`         | Key for jumping to the top of the buffer in the popup window.       | <kbd>S-Home</kbd>     |
 | `bottom`      | Key for jumping to the botton of the buffer in the popup window.    | <kbd>S-End</kbd>      |
 
@@ -101,7 +102,8 @@ Example:
 ```vim
 let g:cmakehelp = {
         \ 'exe': expand('~/.local/bin/cmake'),
-        \ 'browser': 'xdg-open'
+        \ 'browser': 'xdg-open',
+        \ 'maxheight': 20
         \ }
 ```
 

@@ -20,7 +20,8 @@ const s:defaults = {
         \ 'scrollup': "\<s-pageup>",
         \ 'scrolldown': "\<s-pagedown>",
         \ 'top': "\<s-home>",
-        \ 'bottom': "\<s-end>"
+        \ 'bottom': "\<s-end>",
+        \ 'maxheight': 0
         \ }
 
 " Lookup table, example: s:lookup['set_target_properties'] -> 'command'
@@ -164,13 +165,14 @@ function s:close_cb_popup(fun, lnum, col, bufnr) abort
     const width = textwidth + 3 > &columns ? &columns - 3 : textwidth
     const pos = screenpos(win_getid(), a:lnum, a:col)
     const col = &columns - pos.curscol < width ? &columns - width : pos.curscol
+    const height = s:get('maxheight')
 
     let s:winid = a:fun(a:bufnr, {
             \ 'col': col,
             \ 'moved': 'any',
             \ 'minwidth': width,
             \ 'maxwidth': width,
-            \ 'maxheight': max([&lines - pos.row, pos.row]),
+            \ 'maxheight': height ? height : max([&lines - pos.row, pos.row]),
             \ 'wrap': v:true,
             \ 'highlight': 'CMakeHelp',
             \ 'padding': [],
