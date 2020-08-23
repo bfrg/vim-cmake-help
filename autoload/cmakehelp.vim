@@ -157,7 +157,7 @@ function s:close_cb_popup(fun, lnum, col, bufnr) abort
     let buflines = getbufline(a:bufnr, 1, '$')
     let textwidth = len(buflines)
             \ ->range()
-            \ ->map({_,i -> strdisplaywidth(buflines[i])})
+            \ ->map('strdisplaywidth(buflines[v:val])')
             \ ->max()
 
     " 2 for left+right padding + 1 for scrollbar = 3
