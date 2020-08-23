@@ -154,16 +154,16 @@ function s:close_cb_popup(fun, lnum, col, bufnr) abort
         return
     endif
 
-    let buflines = getbufline(a:bufnr, 1, '$')
-    let textwidth = len(buflines)
+    const buflines = getbufline(a:bufnr, 1, '$')
+    const textwidth = len(buflines)
             \ ->range()
             \ ->map('strdisplaywidth(buflines[v:val])')
             \ ->max()
 
     " 2 for left+right padding + 1 for scrollbar = 3
-    let width = textwidth + 3 > &columns ? &columns - 3 : textwidth
-    let pos = screenpos(win_getid(), a:lnum, a:col)
-    let col = &columns - pos.curscol < width ? &columns - width : pos.curscol
+    const width = textwidth + 3 > &columns ? &columns - 3 : textwidth
+    const pos = screenpos(win_getid(), a:lnum, a:col)
+    const col = &columns - pos.curscol < width ? &columns - width : pos.curscol
 
     let s:winid = a:fun(a:bufnr, {
             \ 'col': col,
