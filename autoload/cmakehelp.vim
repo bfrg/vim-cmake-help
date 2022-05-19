@@ -1,275 +1,285 @@
-" ==============================================================================
-" View CMake documentation inside Vim
-" File:         autoload/cmakehelp.vim
-" Author:       bfrg <https://github.com/bfrg>
-" Website:      https://github.com/bfrg/vim-cmake-help
-" Last Change:  Aug 23, 2020
-" License:      Same as Vim itself (see :h license)
-" ==============================================================================
+vim9script
+# ==============================================================================
+# View CMake documentation inside Vim
+# File:         autoload/cmakehelp.vim
+# Author:       bfrg <https://github.com/bfrg>
+# Website:      https://github.com/bfrg/vim-cmake-help
+# Last Change:  May 19, 2022
+# License:      Same as Vim itself (see :h license)
+# ==============================================================================
 
-let s:save_cpo = &cpoptions
-set cpoptions&vim
+highlight default link CMakeHelp           Pmenu
+highlight default link CMakeHelpScrollbar  PmenuSbar
+highlight default link CMakeHelpThumb      PmenuThumb
 
-hi def link CMakeHelp           Pmenu
-hi def link CMakeHelpScrollbar  PmenuSbar
-hi def link CMakeHelpThumb      PmenuThumb
+const defaults: dict<any> = {
+    exe: 'cmake',
+    browser: 'firefox',
+    scrollup: "\<s-pageup>",
+    scrolldown: "\<s-pagedown>",
+    top: "\<s-home>",
+    bottom: "\<s-end>",
+    maxheight: 0
+}
 
-const s:defaults = {
-        \ 'exe': 'cmake',
-        \ 'browser': 'firefox',
-        \ 'scrollup': "\<s-pageup>",
-        \ 'scrolldown': "\<s-pagedown>",
-        \ 'top': "\<s-home>",
-        \ 'bottom': "\<s-end>",
-        \ 'maxheight': 0
-        \ }
+# Lookup table to obtain the group (or category) of a CMake keyword, for
+# example:
+#
+#   keywordmap['set_target_properties'] -> 'command'
+#
+var keywordmap: dict<string> = {}
 
-" Lookup table, example: s:lookup['set_target_properties'] -> 'command'
-let s:lookup = {}
+# CMake version, like v3.15, or 'latest'
+var version: string = ''
 
-" CMake version, like v3.15, or 'latest'
-let s:version = ''
+# Last word the cursor was on; required for balloonevalexpr
+var lastword: string = ''
 
-" Last word the cursor was on; required for balloonevalexpr
-let s:lastword = ''
+# window ID of displayed popup window
+var popup_id: number = 0
 
-" winid of current popup window
-let s:winid = 0
+# Job object for cmake commands
+var cmake_job: job
 
-" Check order: b:cmakehelp -> g:cmakehelp -> s:defaults
-const s:get = {k -> get(b:, 'cmakehelp', get(g:, 'cmakehelp', {}))->get(k, s:defaults[k])}
+# Job object for BROWSER commands
+var browser_job: job
 
-" Get the group of a CMake keyword
-const s:getgroup = {word -> get(s:lookup, word, get(s:lookup, tolower(word), ''))}
+def ErrorMsg(msg: string)
+    redraw
+    echohl ErrorMsg
+    echomsg msg
+    echohl None
+enddef
 
-" Get the name of a CMake help buffer
-const s:bufname = {group, word -> printf('CMake Help: %s [%s]', word, group)}
+# Check order: b:cmakehelp -> g:cmakehelp -> defaults
+def Getopt(key: string): any
+    return get(b:, 'cmakehelp', get(g:, 'cmakehelp', {}))->get(key, defaults[key])
+enddef
 
-" Stop any running jobs
-const s:job_stop = {-> exists('s:job') && job_status(s:job) ==# 'run' ? job_stop(s:job) : {-> 0}}
+# Get the group of a CMake keyword
+def Getgroup(word: string): string
+    return get(keywordmap, word, get(keywordmap, tolower(word), ''))
+enddef
 
-function s:error(...)
-    echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
-endfunction
+# Get the name of a CMake help buffer
+def Bufname(group: string, word: string): string
+    return $'CMake Help: {word} [{group}]'
+enddef
 
-" Obtain CMake version from 'cmake --version'
-function s:init_cmake_version() abort
-    const output = systemlist(s:get('exe') .. ' --version')[0]
+# Obtain CMake version from 'cmake --version'
+def Init_cmake_version()
+    const output = systemlist($'{Getopt('exe')} --version')[0]
     if v:shell_error
-        let s:version = 'latest'
+        version = 'latest'
         return
     endif
-    let s:version = 'v' .. matchstr(output, '\c^\s*cmake\s\+version\s\+\zs\d\.\d\+\ze.*$')
-endfunction
+    version = 'v' .. matchstr(output, '\c^\s*cmake\s\+version\s\+\zs\d\.\d\+\ze.*$')
+enddef
 
-" Initialize lookup-table for finding the group (command, property, variable) of
-" a CMake keyword
-function s:init_lookup() abort
-    const groups = ['command', 'manual', 'module', 'policy', 'property', 'variable']
+# Initialize lookup-table for finding the group (command, property, variable) of
+# a CMake keyword
+def Init_lookup()
+    const groups: list<string> = ['command', 'manual', 'module', 'policy', 'property', 'variable']
+    var words: list<string>
     for i in groups
-        silent let words = systemlist(printf('%s --help-%s-list', s:get('exe'), i))
+        silent words = systemlist($'{Getopt('exe')} --help-{i}-list')
         for k in words
-            let s:lookup[k] = i
+            keywordmap[k] = i
         endfor
     endfor
-endfunction
+enddef
 
-" 'callback' is called after the channel is closed and its output has been read.
-" The output will be appended to a prepared buffer. 'callback' is called with
-" one argument, the buffer number of the prepared buffer and is supposed to open
-" a window with the passed buffer (popup window or normal window)
-function s:openhelp(word, callback) abort
-    if empty(a:word)
+# 'Cb' is called after the channel is closed and its output has been read. The
+# output will be appended to a prepared buffer. 'Cb' is called with one
+# argument, the buffer number of the prepared buffer and is supposed to open a
+# window with the passed buffer (popup window or normal window)
+def Openhelp(word: string, Cb: func(number))
+    if empty(word)
         return
     endif
 
-    const group = s:getgroup(a:word)
+    const group: string = Getgroup(word)
     if empty(group)
-        redraw
-        return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
-    endif
-
-    const bufname = s:bufname(group, a:word)
-
-    " Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
-    " buffers to the buffer list, see :ls!, which will be unloaded and empty
-    if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
-        call s:job_stop()
-        let cmd = printf('%s --help-%s %s', s:get('exe'), group, shellescape(a:word))
-        let s:job = job_start([&shell, &shellcmdflag, cmd], {
-                \ 'out_mode': 'raw',
-                \ 'in_io': 'null',
-                \ 'err_cb': {_,msg -> s:error('cmake-help: %s', msg)},
-                \ 'close_cb': funcref('s:close_cb', [a:callback, bufname])
-                \ })
+        ErrorMsg($'[cmake-help] Sorry, no help for "{word}"')
         return
     endif
 
-    " Buffer already exists with content, we don't have to call CMake again
-    call a:callback(bufnr(bufname))
-endfunction
+    const bufname: string = Bufname(group, word)
 
-function s:close_cb(callback, bufname, channel) abort
-    let output = []
-    while ch_status(a:channel, {'part': 'out'}) ==# 'buffered'
-        call extend(output, split(ch_readraw(a:channel), "\n"))
-    endwhile
+    # Note: when CTRL-O is pressed, Vim automatically adds old 'CMake Help'
+    # buffers to the buffer list, see :ls!, which will be unloaded and empty
+    if !bufexists(bufname) || (bufexists(bufname) && !bufloaded(bufname))
+        if job_status(cmake_job) == 'run'
+            job_stop(cmake_job)
+        endif
+
+        cmake_job = job_start([Getopt('exe'), $'--help-{group}', word], {
+            out_mode: 'raw',
+            in_io: 'null',
+            err_cb: (_, msg) => ErrorMsg($'[cmake-help] {msg}'),
+            close_cb: funcref(Close_cb, [Cb, bufname])
+        })
+        return
+    endif
+
+    # Buffer already exists with content, we don't have to call CMake again
+    Cb(bufnr(bufname))
+enddef
+
+def Close_cb(Cb: func, bufname: string, ch: channel)
+    var output: list<string> = []
+    if ch_status(ch, {part: 'out'}) == 'buffered'
+        extend(output, ch->ch_readraw()->split('\n'))
+    endif
 
     if empty(output)
-        return s:error('cmake-help: no output from running "%s"', cmd)
+        return
     endif
 
-    const bufnr = bufadd(a:bufname)
-    silent call bufload(bufnr)
-    call setbufvar(bufnr, '&swapfile', 0)
-    call setbufvar(bufnr, '&buftype', 'nofile')
-    call setbufvar(bufnr, '&bufhidden', 'hide')
-    call setbufvar(bufnr, '&filetype', 'rst')
-    call setbufline(bufnr, 1, output)
-    call setbufvar(bufnr, '&modifiable', 0)
-    call setbufvar(bufnr, '&readonly', 1)
-    call a:callback(bufnr)
-endfunction
+    const bufnr: number = bufadd(bufname)
+    silent bufload(bufnr)
+    setbufvar(bufnr, '&swapfile', false)
+    setbufvar(bufnr, '&buftype', 'nofile')
+    setbufvar(bufnr, '&bufhidden', 'hide')
+    setbufvar(bufnr, '&filetype', 'rst')
+    setbufline(bufnr, 1, output)
+    setbufvar(bufnr, '&modifiable', false)
+    setbufvar(bufnr, '&readonly', true)
+    Cb(bufnr)
+enddef
 
-function s:popup_filter(winid, key) abort
-    if line('$', a:winid) == popup_getpos(a:winid).core_height
-        return v:false
+def Popup_filter(winid: number, key: string): bool
+    if line('$', winid) == popup_getpos(winid).core_height
+        return false
     endif
-    if a:key ==# s:get('scrollup')
-        call win_execute(a:winid, "normal! \<c-y>")
-    elseif a:key ==# s:get('scrolldown')
-        call win_execute(a:winid, "normal! \<c-e>")
-    elseif a:key ==# s:get('top')
-        call win_execute(a:winid, 'normal! gg')
-    elseif a:key ==# s:get('bottom')
-        call win_execute(a:winid, 'normal! G')
+    if key == Getopt('scrollup')
+        win_execute(winid, "normal! \<c-y>")
+    elseif key == Getopt('scrolldown')
+        win_execute(winid, "normal! \<c-e>")
+    elseif key == Getopt('top')
+        win_execute(winid, 'normal! gg')
+    elseif key == Getopt('bottom')
+        win_execute(winid, 'normal! G')
     else
-        return v:false
+        return false
     endif
-    call popup_setoptions(a:winid, {'minheight': popup_getpos(a:winid).core_height})
-    return v:true
-endfunction
+    popup_setoptions(winid, {minheight: popup_getpos(winid).core_height})
+    return true
+enddef
 
-function s:close_cb_popup(fun, lnum, col, bufnr) abort
-    if !a:bufnr
+def Close_cb_popup(Func: func(any, dict<any>): number, lnum: number, column: number, bufnr: number)
+    if bufnr == 0
         return
     endif
 
-    const buflines = getbufline(a:bufnr, 1, '$')
-    const textwidth = len(buflines)
-            \ ->range()
-            \ ->map('strdisplaywidth(buflines[v:val])')
-            \ ->max()
+    const buflines: list<string> = getbufline(bufnr, 1, '$')
+    const textwidth: number = buflines
+        ->len()
+        ->range()
+        ->map((_, i: number) => strdisplaywidth(buflines[i]))
+        ->max()
 
-    " 2 for left+right padding + 1 for scrollbar = 3
-    const width = textwidth + 3 > &columns ? &columns - 3 : textwidth
-    const pos = screenpos(win_getid(), a:lnum, a:col)
-    const col = &columns - pos.curscol < width ? &columns - width : pos.curscol
-    const height = s:get('maxheight')
+    # 2 for left+right padding + 1 for scrollbar = 3
+    const width: number = textwidth + 3 > &columns ? &columns - 3 : textwidth
+    const pos: dict<number> = win_getid()->screenpos(lnum, column)
+    const col: number = &columns - pos.curscol < width ? &columns - width : pos.curscol
+    const height: number = Getopt('maxheight')
 
-    let s:winid = a:fun(a:bufnr, {
-            \ 'col': col,
-            \ 'moved': 'any',
-            \ 'minwidth': width,
-            \ 'maxwidth': width,
-            \ 'maxheight': height ? height : max([&lines - pos.row, pos.row]),
-            \ 'wrap': v:true,
-            \ 'highlight': 'CMakeHelp',
-            \ 'padding': [],
-            \ 'mapping': v:false,
-            \ 'scrollbarhighlight': 'CMakeHelpScrollbar',
-            \ 'scrollbarthumb': 'CMakeHelpThumb',
-            \ 'filtermode': 'n',
-            \ 'filter': funcref('s:popup_filter')
-            \ })
+    popup_id = Func(bufnr, {
+        col: col,
+        moved: 'any',
+        minwidth: width,
+        maxwidth: width,
+        maxheight: height > 0 ? height : max([&lines - pos.row, pos.row]),
+        wrap: true,
+        highlight: 'CMakeHelp',
+        padding: [],
+        mapping: false,
+        scrollbarhighlight: 'CMakeHelpScrollbar',
+        scrollbarthumb: 'CMakeHelpThumb',
+        filtermode: 'n',
+        filter: Popup_filter
+    })
 
-    call setwinvar(s:winid, '&breakindent', 1)
-endfunction
+    setwinvar(popup_id, '&breakindent', true)
+enddef
 
-function s:close_cb_preview(mods, bufnr) abort
-    if !a:bufnr || bufwinnr(bufname(a:bufnr)) > 0
+def Close_cb_preview(mods: string, bufnr: number)
+    if !bufnr || bufnr->bufname()->bufwinnr() > 0
         return
     endif
-    silent execute a:mods 'pedit' fnameescape(bufname(a:bufnr))
-endfunction
+    silent execute $'{mods} pedit {bufnr->bufname()->fnameescape()}'
+enddef
 
-" Open CMake documentation for 'word' in the preview window
-function cmakehelp#preview(mods, word) abort
-    call s:openhelp(a:word, funcref('s:close_cb_preview', [a:mods]))
-endfunction
+# Open CMake documentation for 'word' in the preview window
+export def Preview(mods: string, word: string)
+    Openhelp(word, funcref(Close_cb_preview, [mods]))
+enddef
 
-" Open CMake documentation for 'word' in popup window at current cursor position
-function cmakehelp#popup(word) abort
-    if s:winid && !empty(popup_getpos(s:winid))
-        call s:job_stop()
-        call popup_close(s:winid)
-        let s:winid = 0
+# Open CMake documentation for 'word' in popup window at current cursor position
+export def Popup(word: string)
+    if popup_id > 0 && !popup_id->popup_getpos()->empty()
+        popup_close(popup_id)
+        popup_id = 0
     endif
 
-    let s:lastword = a:word
-    call s:openhelp(a:word, funcref('s:close_cb_popup', [
-            \ function('popup_atcursor'),
-            \ line('.'),
-            \ col('.')
-            \ ]))
-endfunction
+    lastword = word
+    Openhelp(word, funcref(Close_cb_popup, [function('popup_atcursor'), line('.'), col('.')]))
+enddef
 
-function cmakehelp#balloonexpr() abort
-    if s:winid && !empty(popup_getpos(s:winid))
-        if s:lastword == v:beval_text
+export def Balloonexpr(): string
+    if popup_id > 0 && !popup_id->popup_getpos()->empty()
+        if lastword == v:beval_text
             return ''
         endif
-        call s:job_stop()
-        call popup_close(s:winid)
-        let s:winid = 0
+        popup_close(popup_id)
+        popup_id = 0
     endif
 
-    let s:lastword = v:beval_text
-    call s:openhelp(v:beval_text, funcref('s:close_cb_popup', [
-            \ function('popup_beval'),
-            \ v:beval_lnum,
-            \ v:beval_col
-            \ ]))
+    lastword = v:beval_text
+    Openhelp(v:beval_text, funcref(Close_cb_popup, [function('popup_beval'), v:beval_lnum, v:beval_col]))
     return ''
-endfunction
+enddef
 
-" Open CMake documentation for 'word' in a browser
-function cmakehelp#browser(word) abort
-    if empty(s:version)
-        call s:init_cmake_version()
+# Open CMake documentation for 'word' in a browser
+export def Browser(word: string)
+    if version == ''
+        Init_cmake_version()
     endif
 
-    if empty(a:word)
-        const url = 'https://cmake.org/cmake/help/' .. s:version
+    var url: string
+
+    if word == ''
+        url = $'https://cmake.org/cmake/help/{version}'
     else
-        const group = s:getgroup(a:word)
-        if empty(group)
-            redraw
-            return s:error('cmake-help: not a valid CMake keyword "%s"', a:word)
+        const group: string = Getgroup(word)
+        if group == ''
+            ErrorMsg($'[cmake-help] not a valid CMake keyword "{word}"')
+            return
         endif
 
-        const word = group ==# 'manual'
-                \ ? substitute(a:word[:-2], '(', '.', '')
-                \ : substitute(a:word, '<\|>', '', 'g')
+        const w = group == 'manual'
+            ? substitute(word[: -2], '(', '.', '')
+            : substitute(word, '<\|>', '', 'g')
 
-        const url = group ==# 'property'
-                \ ? printf('https://cmake.org/cmake/help/%s/manual/cmake-properties.7.html', s:version)
-                \ : printf('https://cmake.org/cmake/help/%s/%s/%s.html', s:version, group, word)
+        url = group == 'property'
+            ? $'https://cmake.org/cmake/help/{version}/manual/cmake-properties.7.html'
+            : $'https://cmake.org/cmake/help/{version}/{group}/{w}.html'
     endif
 
-    return job_start([&shell, &shellcmdflag, s:get('browser') .. ' ' .. url], {
-            \ 'in_io': 'null',
-            \ 'out_io': 'null',
-            \ 'err_io': 'null',
-            \ 'stoponexit': ''
-            \ })
-endfunction
+    browser_job = job_start([Getopt('browser'), url], {
+        in_io: 'null',
+        out_io: 'null',
+        err_io: 'null',
+        stoponexit: ''
+    })
+enddef
 
-function cmakehelp#complete(arglead, cmdline, cursorpos) abort
-    return keys(s:lookup)->filter({_,i -> match(i, a:arglead) == 0})->sort()
-endfunction
+export def Complete(arglead: string, cmdline: string, cursorpos: number): list<string>
+    return keywordmap
+        ->keys()
+        ->filter((_, i: string): bool => match(i, arglead) == 0)
+        ->sort()
+enddef
 
-call s:init_lookup()
-
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
+Init_lookup()

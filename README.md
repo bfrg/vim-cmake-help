@@ -1,6 +1,6 @@
 # vim-cmake-help
 
-View [CMake][cmake] documentation inside Vim (`>= 8.1.2250`).
+View [CMake][cmake] documentation inside Vim (`>= 8.2.4980`).
 
 The plugin provides three methods for quickly displaying CMake documentation:
 1. Open the documentation in a new split window.
@@ -29,6 +29,7 @@ mode for argument completion and to get a list of supported keywords.
 To open the CMake documentation for the word under the cursor in a popup window with
 <kbd>K</kbd>, add the following to `~/.vim/after/ftplugin/cmake.vim`:
 ```vim
+vim9script
 setlocal keywordprg=:CMakeHelpPopup
 ```
 
@@ -47,10 +48,12 @@ commands:
 
 Add the following to `~/.vim/after/ftplugin/cmake.vim`:
 ```vim
-" Open the online CMake documentation for current word in a browser
+vim9script
+
+# Open the online CMake documentation for current word in a browser
 nmap <buffer> <leader>k <plug>(cmake-help-online)
 
-" Open CMake documentation for current word in a preview window
+# Open CMake documentation for current word in a preview window
 nmap <buffer> <leader>K <plug>(cmake-help)
 ```
 
@@ -70,9 +73,13 @@ The plugin provides a `balloonexpr` that will open the CMake documentation for
 the word under the mouse pointer in a popup window. To enable this feature, add
 the following to `~/.vim/after/ftplugin/cmake.vim`:
 ```vim
+vim9script
+
+import autoload 'cmakehelp.vim'
+
 setlocal ballooneval
 setlocal balloonevalterm
-setlocal balloonexpr=cmakehelp#balloonexpr()
+setlocal balloonexpr=cmakehelp.Balloonexpr()
 ```
 Moving the mouse pointer outside the current word closes the popup window.
 
@@ -97,15 +104,17 @@ variable must be a dictionary containing any of the following entries:
 
 Example:
 ```vim
-let g:cmakehelp = {
-        \ 'exe': expand('~/.local/bin/cmake'),
-        \ 'browser': 'xdg-open',
-        \ 'maxheight': 20,
-        \ 'scrollup': "\<c-k>",
-        \ 'scrolldown': "\<c-j>",
-        \ 'top': "\<c-t>",
-        \ 'bottom': "\<c-g>"
-        \ }
+vim9script
+
+g:cmakehelp = {
+    exe: expand('~/.local/bin/cmake'),
+    browser: 'xdg-open',
+    maxheight: 20,
+    scrollup: "\<c-k>",
+    scrolldown: "\<c-j>",
+    top: "\<c-t>",
+    bottom: "\<c-g>"
+}
 ```
 
 ### Popup highlightings

@@ -30,7 +30,7 @@ Commands ~
 
             For example, to open the CMake documentation for the word under
             the cursor in a popup window with |K|, use 'keywordprg': >
-                " in ~/.vim/after/ftplugin/cmake.vim
+                # in ~/.vim/after/ftplugin/cmake.vim
                 setlocal keywordprg=:CMakeHelpPopup
 
 :CMakeHelpOnline [{arg}]                                    *:CMakeHelpOnline*
@@ -48,7 +48,7 @@ Mappings ~
             in a |preview-window|.
 
             Example: >
-                " in ~/.vim/after/ftplugin/cmake.vim
+                # in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help)
 <
 <plug>(cmake-help-popup)                            *<plug>(cmake-help-popup)*
@@ -56,7 +56,7 @@ Mappings ~
             in a |popup-window|.
 
             Example: >
-                " in ~/.vim/after/ftplugin/cmake.vim
+                # in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help-popup)
 <
 <plug>(cmake-help-online)                          *<plug>(cmake-help-online)*
@@ -64,7 +64,7 @@ Mappings ~
             in the browser specified by |cmakehelp.browser|.
 
             Example: >
-                " in ~/.vim/after/ftplugin/cmake.vim
+                # in ~/.vim/after/ftplugin/cmake.vim
                 nmap <buffer> <space>h <plug>(cmake-help-online)
 <
 Mouse hovers ~
@@ -73,9 +73,11 @@ A 'balloonexpr' is provided that will display the CMake documentation for the
 word under the mouse pointer in a popup window.
 
 To enable this feature, add the following to after/ftplugin/cmake.vim: >
+    vim9script
+    import autoload 'cmakehelp.vim'
     setlocal ballooneval
     setlocal balloonevalterm
-    setlocal balloonexpr=cmakehelp#balloonexpr()
+    setlocal balloonexpr=cmakehelp.Balloonexpr()
 <
 Moving the mouse pointer outside the current word closes the popup window.
 
