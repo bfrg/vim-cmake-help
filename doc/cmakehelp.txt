@@ -41,6 +41,8 @@ Commands ~
             https://cmake.org/cmake/help/vX.YY, where X.YY denotes the version
             of the CMake executable specified in |cmakehelp.exe|.
 
+Above commands are all buffer local, available only with `filetype=cmake`.
+
 Mappings ~
 
 <plug>(cmake-help)                                        *<plug>(cmake-help)*

@@ -24,6 +24,8 @@ The plugin provides three methods for quickly displaying CMake documentation:
 `{arg}` can be any standard CMake keyword. Use <kbd>TAB</kbd> in command-line
 mode for argument completion and to get a list of supported keywords.
 
+These commands are all buffer local and only available with `filetype=cmake`.
+
 #### Example
 
 To open the CMake documentation for the word under the cursor in a popup window with
